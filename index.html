@@ -145,6 +145,7 @@
     <!-- Falling Petals & Gold Leaves Canvas -->
     <canvas id="petalsCanvas" class="fixed inset-0 pointer-events-none z-10 w-full h-full"></canvas>
 
+    <!-- Botón de música flotante -->
     <div class="fixed bottom-5 right-5 z-50">
         <button id="musicToggleBtn" onclick="toggleAudio()" aria-label="Reproducir música de fondo" class="glass-card-light text-amber-800 p-4 rounded-full shadow-2xl border border-amber-300 hover:bg-amber-100/80 transition-all duration-300 flex items-center justify-center space-x-2 group">
             <i id="musicIcon" class="fas fa-music text-xl text-amber-700 animate-bounce"></i>
@@ -321,9 +322,6 @@
                             <span class="text-xs font-sans-clean tracking-widest uppercase text-ruby-700 font-bold">Ceremonia Religiosa</span>
                             <h4 class="font-serif-heading text-xl text-amber-950 font-bold mt-0.5">Santuario Niño de la Salud</h4>
                             <p class="text-gray-700 text-base mt-1 font-medium">
-                                <i class="far fa-calendar-alt text-amber-700 mr-2"></i>Sábado 15 de Agosto del 2026
-                            </p>
-                            <p class="text-gray-700 text-base font-medium">
                                 <i class="far fa-clock text-amber-700 mr-2"></i>Misa: 4:00 PM
                             </p>
                         </div>
@@ -415,7 +413,7 @@
                         <span>Nota Especial sobre el Color Rojo</span>
                     </div>
                     <p class="font-body text-xl text-gray-800 leading-snug">
-                        <strong class="text-ruby-900 font-bold">Cualquier tipo de rojo no se permite, queda strictly reservado para la quinceañera.</strong> 
+                        <strong class="text-ruby-900 font-bold">Cualquier tipo de rojo no se permite, queda estrictamente reservado para la quinceañera.</strong> 
                         Agradecemos enormemente tu comprensión al asistir en cualquier otro color elegante.
                     </p>
                 </div>
@@ -446,14 +444,6 @@
         <div class="max-w-xl mx-auto px-4 space-y-12 py-12">
 
             <section id="rsvp" class="glass-card-accent rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-2xl relative overflow-hidden">
-                <!-- Header Badge -->
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-amber-200/80">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span class="font-sans-clean text-[11px] font-bold tracking-wider text-amber-900 uppercase">Sistema de Confirmación Activo</span>
-                    </div>
-                </div>
-
                 <div class="text-center mb-6">
                     <span class="text-xs font-sans-clean text-ruby-700 font-bold tracking-widest uppercase">Módulo de Confirmación Digital</span>
                     <h3 class="font-serif-heading text-2xl text-amber-950 font-extrabold uppercase tracking-widest mt-1">Confirma tu Asistencia</h3>
@@ -463,15 +453,15 @@
                 </div>
 
                 <!-- Formulario -->
-                <form id="scacForm" onsubmit="processSCACConfirmation(event)" class="space-y-4 font-sans-clean">
+                <form id="scacForm" onsubmit="processConfirmation(event)" class="space-y-4 font-sans-clean">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Nombre Completo o Familia *</label>
-                        <input type="text" id="guestName" required placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white border border-amber-300 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
+                        <input type="text" id="guestName" required placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
                     </div>
 
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Número de Pases Confirmados *</label>
-                        <select id="guestCount" required class="w-full px-4 py-3 rounded-xl bg-white border border-amber-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
+                        <select id="guestCount" required class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
                             <option value="1 Pase (Individual)">1 Pase (Individual)</option>
                             <option value="2 Pases" selected>2 Pases</option>
                             <option value="3 Pases">3 Pases</option>
@@ -488,7 +478,7 @@
                 </form>
             </section>
 
-            <footer class="text-center py-10 border-t border-amber-300/60 space-y-6">
+            <footer class="text-center py-10 border-t border-amber-300/60 space-y-6 reveal">
                 
                 <!-- Avatar Photo Slot in Footer -->
                 <div class="w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-amber-300 shadow-xl relative p-1 bg-white">
@@ -615,22 +605,21 @@
             window.open(url, '_blank');
         }
 
-        // --- 4. SCAC PROCESSOR & WHATSAPP SENDER ---
-        function processSCACConfirmation(event) {
+        // --- 4. WHATSAPP CONFIRMATION ---
+        function processConfirmation(event) {
             event.preventDefault();
             const name = document.getElementById("guestName").value.trim();
             const count = document.getElementById("guestCount").value;
 
             const phoneNumber = "522205673535"; // Target RSVP phone number
 
-            let text = `✨ *SISTEMA DE CONFIRMACIÓN DE ASISTENCIA* ✨\n`;
+            let text = `✨ *CONFIRMACIÓN DE ASISTENCIA* ✨\n`;
             text += `------------------------------------\n`;
             text += `🎉 *EVENTO:* XV Años Montserrat Jasso Estrada\n`;
             text += `👤 *INVITADO(S):* ${name}\n`;
             text += `🎟️ *PASES:* ${count}\n`;
-            text += `📌 *ESTATUS:* ¡Sí, con mucho gusto asistiré!\n`;
+            text += `📌 *ESTATUS:* ¡Sí, con mucho gusto asistiremos!\n`;
             text += `------------------------------------\n`;
-            text += `_Confirmación registrada mediante el portal digital._`;
 
             const encodedText = encodeURIComponent(text);
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedText}`;
@@ -663,7 +652,7 @@
             if (distance < 0) {
                 const container = document.getElementById("countdown-container");
                 if(container) {
-                    container.innerHTML = "<p class='text-2xl font-script text-amber-200 drop-shadow-lg mb-2'>¡El día tan esperado ha llegado!</p>";
+                    container.innerHTML = "<p class='text-2xl font-script text-amber-200 drop-shadow-lg mb-2'>¡El gran día ha llegado!</p>";
                 }
                 return;
             }
