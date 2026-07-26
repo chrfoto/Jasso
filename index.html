@@ -153,6 +153,12 @@
         </button>
     </div>
 
+    <!-- Audio Element -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://www.dropbox.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=64cyhv4r&dl=1" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
     <div id="envelopeOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-700 overflow-hidden">
         <!-- Background Photo for Welcome Screen -->
         <img src="https://i.imgur.com/99RV5jM.jpeg" 
@@ -237,7 +243,7 @@
             <section class="space-y-6">
                 <div class="text-center">
                     <span class="text-xs font-sans-clean uppercase tracking-[0.2em] text-amber-800 font-bold">Con la Bendición de Dios</span>
-                    <h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest mt-0.5">Nuestros Padres & Padrinos</h3>
+                    <h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest mt-0.5">Mis Padres & Padrinos</h3>
                 </div>
 
                 <!-- Parents Card -->
@@ -459,18 +465,6 @@
                         <input type="text" id="guestName" required placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
                     </div>
 
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Número de Pases Confirmados *</label>
-                        <select id="guestCount" required class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
-                            <option value="1 Pase (Individual)">1 Pase (Individual)</option>
-                            <option value="2 Pases" selected>2 Pases</option>
-                            <option value="3 Pases">3 Pases</option>
-                            <option value="4 Pases">4 Pases</option>
-                            <option value="5 Pases">5 Pases</option>
-                            <option value="Familia Completa">Familia Completa</option>
-                        </select>
-                    </div>
-
                     <button type="submit" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-emerald-900/20 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-95 mt-4">
                         <i class="fab fa-whatsapp text-xl"></i>
                         <span>Confirmar por WhatsApp</span>
@@ -512,69 +506,23 @@
     </div>
 
     <script>
-        // --- 1. AUDIO SYNTHESIZER / BACKGROUND MUSIC ---
-        let audioCtx = null;
+        // --- 1. AUDIO PLAYER / BACKGROUND MUSIC ---
+        const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
-        let melodyInterval = null;
 
         function toggleAudio() {
             if (!isPlaying) {
-                startMelody();
-                isPlaying = true;
-                document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
-                document.getElementById("musicText").innerText = "Pausar";
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
+                    document.getElementById("musicText").innerText = "Pausar";
+                }).catch(e => console.log("Audio play failed:", e));
             } else {
-                stopMelody();
+                bgMusic.pause();
                 isPlaying = false;
                 document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
                 document.getElementById("musicText").innerText = "Música";
             }
-        }
-
-        function startMelody() {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                const notes = [
-                    261.63, 329.63, 392.00, 523.25, // C E G C
-                    220.00, 261.63, 329.63, 440.00, // A C E A
-                    174.61, 220.00, 261.63, 349.23, // F A C F
-                    196.00, 246.94, 293.66, 392.00  // G B D G
-                ];
-                let noteIndex = 0;
-
-                melodyInterval = setInterval(() => {
-                    if (!isPlaying) return;
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
-                    
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
-
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 1.8);
-
-                    noteIndex = (noteIndex + 1) % notes.length;
-                }, 600);
-
-            } catch(e) {
-                console.log("Audio not supported", e);
-            }
-        }
-
-        function stopMelody() {
-            if (melodyInterval) clearInterval(melodyInterval);
         }
 
         // --- 2. OPEN INVITATION OVERLAY ---
@@ -609,7 +557,6 @@
         function processConfirmation(event) {
             event.preventDefault();
             const name = document.getElementById("guestName").value.trim();
-            const count = document.getElementById("guestCount").value;
 
             const phoneNumber = "522205673535"; // Target RSVP phone number
 
@@ -617,7 +564,6 @@
             text += `------------------------------------\n`;
             text += `🎉 *EVENTO:* XV Años Montserrat Jasso Estrada\n`;
             text += `👤 *INVITADO(S):* ${name}\n`;
-            text += `🎟️ *PASES:* ${count}\n`;
             text += `📌 *ESTATUS:* ¡Sí, con mucho gusto asistiremos!\n`;
             text += `------------------------------------\n`;
 
