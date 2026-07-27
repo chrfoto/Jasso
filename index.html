@@ -137,6 +137,9 @@
 </head>
 <body class="bg-light-pattern text-gray-800 font-body overflow-x-hidden antialiased selection:bg-gold-200 selection:text-gold-900">
 
+    <!-- WRAPPER PRINCIPAL (Para poder ocultar la invitación en modo Admin) -->
+    <div id="invitationWrapper">
+
     <!-- Background Texture -->
     <div class="fixed inset-0 z-0 opacity-[0.15] pointer-events-none mix-blend-multiply" 
          style="background-image: url('https://i.imgur.com/r035ySS.jpeg'), url('https://i.imgur.com/r035ySS.jpeg'); background-size: 250px, 600px; background-repeat: repeat, repeat;">
@@ -185,7 +188,17 @@
 
             <div class="relative z-10">
                 <h1 class="font-serif-heading text-2xl text-amber-950 tracking-widest mb-1 font-bold">Montserrat</h1>
-                <p class="font-script text-3xl text-ruby-800 mb-8 font-bold">Mis XV Años</p>
+                <p class="font-script text-3xl text-ruby-800 mb-6 font-bold">Mis XV Años</p>
+            </div>
+
+            <!-- SCAC: Saludo Dinámico -->
+            <div id="scacGuestGreeting" class="relative z-10 mb-6 hidden">
+                <div class="w-12 h-[1px] bg-amber-300 mx-auto mb-4"></div>
+                <p class="text-[10px] font-sans-clean uppercase tracking-[0.3em] text-amber-800 font-bold mb-2">Especialmente para:</p>
+                <h2 id="scacNameDisplay" class="font-serif-heading text-xl text-amber-950 font-bold leading-tight px-2"></h2>
+                <div class="mt-3 inline-block px-4 py-1.5 bg-amber-100 border border-amber-300 rounded-full shadow-sm">
+                    <span id="scacPassesDisplay" class="text-xs font-sans-clean text-amber-900 font-bold tracking-widest uppercase"></span>
+                </div>
             </div>
 
             <button onclick="openInvitation()" class="relative z-10 w-full py-3.5 px-6 rounded-xl bg-amber-900 hover:bg-amber-800 text-white font-sans-clean font-bold tracking-widest uppercase text-xs shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
@@ -460,9 +473,20 @@
 
                 <!-- Formulario -->
                 <form id="scacForm" onsubmit="processConfirmation(event)" class="space-y-4 font-sans-clean">
-                    <div>
+                    
+                    <!-- Entrada Manual (Fallback) -->
+                    <div id="manualNameInput">
                         <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Nombre Completo o Familia *</label>
                         <input type="text" id="guestName" required placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
+                    </div>
+
+                    <!-- Tarjeta Dinámica SCAC (Oculta por defecto) -->
+                    <div id="scacRsvpCard" class="hidden p-4 bg-amber-50 border border-amber-300 rounded-xl text-center shadow-inner">
+                        <p class="text-[10px] uppercase tracking-widest font-bold text-amber-800 mb-1">Pases Asignados a:</p>
+                        <h4 id="rsvpScacName" class="font-serif-heading text-lg font-bold text-amber-950"></h4>
+                        <div class="mt-2 text-ruby-800 font-bold text-sm bg-white/60 inline-block px-3 py-1 rounded-lg border border-amber-200">
+                            <i class="fas fa-ticket-alt mr-1"></i> <span id="rsvpScacPasses"></span>
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-emerald-900/20 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-95 mt-4">
@@ -505,7 +529,82 @@
         </div>
     </div>
 
+    </div> <!-- FIN DEL WRAPPER PRINCIPAL -->
+
+    <!-- PANEL ADMIN SCAC (Uso Exclusivo Oculto por Defecto) -->
+    <div id="adminPanel" class="hidden relative z-[100] min-h-screen bg-gray-100 p-4 md:p-8 font-sans-clean">
+        <div class="max-w-4xl mx-auto space-y-6">
+            <header class="bg-white rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between border-t-4 border-amber-600 shadow-md">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">Panel SCAC <span class="text-amber-600">Pro</span></h1>
+                    <p class="text-sm text-gray-500 mt-1">Generador de Invitaciones - XV Años Montserrat</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center space-x-3 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
+                    <i class="fas fa-users text-amber-600"></i>
+                    <div class="text-sm">
+                        <span class="block text-gray-500 text-xs uppercase font-bold">Total Pases</span>
+                        <span id="adminTotalPasses" class="font-bold text-lg text-amber-800">0</span>
+                    </div>
+                </div>
+            </header>
+
+            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-md">
+                <h2 class="text-lg font-bold text-gray-800 mb-6 border-b pb-2"><i class="fas fa-plus-circle text-amber-500 mr-2"></i>Nuevo Invitado</h2>
+                <form id="adminGeneratorForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs uppercase tracking-wider font-bold text-gray-600 mb-2">Nombre / Familia</label>
+                            <input type="text" id="adminGuestName" required placeholder="Ej. Familia Jasso Estrada" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider font-bold text-gray-600 mb-2">Número de Pases</label>
+                            <input type="number" id="adminGuestPasses" required min="1" max="15" value="2" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all text-center font-bold text-lg">
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="bg-amber-900 hover:bg-amber-800 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-sm transition-all flex items-center space-x-2 shadow-lg active:scale-95">
+                            <i class="fas fa-magic"></i>
+                            <span>Generar Enlace</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="bg-white rounded-2xl p-6 md:p-8 shadow-md">
+                <div class="flex justify-between items-center mb-6 border-b pb-2">
+                    <h2 class="text-lg font-bold text-gray-800"><i class="fas fa-clipboard-list text-amber-500 mr-2"></i>Historial de Envíos</h2>
+                    <button onclick="adminClearHistory()" class="text-xs text-red-500 hover:text-red-700 font-bold uppercase"><i class="fas fa-trash-alt mr-1"></i> Borrar Todo</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                <th class="p-3 rounded-tl-lg">Invitado</th>
+                                <th class="p-3 text-center">Pases</th>
+                                <th class="p-3 text-center hidden md:table-cell">Fecha</th>
+                                <th class="p-3 text-right rounded-tr-lg">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminGuestList" class="divide-y divide-gray-100 text-sm"></tbody>
+                    </table>
+                    <div id="adminEmptyState" class="text-center py-10 text-gray-400 hidden">
+                        <i class="fas fa-box-open text-4xl mb-3 opacity-50"></i>
+                        <p>No has generado ninguna invitación aún.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div id="adminToast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-green-500 text-white px-6 py-3 rounded-xl shadow-2xl font-bold flex items-center space-x-2 z-[110] pointer-events-none">
+            <i class="fas fa-check-circle"></i>
+            <span id="adminToastMsg">Copiado al portapapeles</span>
+        </div>
+    </div>
+
     <script>
+        // --- SCAC GLOBAL VARS ---
+        let scacGuest = null;
+        let scacPasses = null;
+
         // --- 1. AUDIO PLAYER / BACKGROUND MUSIC ---
         const bgMusic = document.getElementById('bgMusic');
         let isPlaying = false;
@@ -556,14 +655,21 @@
         // --- 4. WHATSAPP CONFIRMATION ---
         function processConfirmation(event) {
             event.preventDefault();
-            const name = document.getElementById("guestName").value.trim();
+            
+            let finalName = scacGuest ? scacGuest : document.getElementById("guestName").value.trim();
+            let finalPasses = scacPasses ? scacPasses : "No especificado";
 
             const phoneNumber = "522205673535"; // Target RSVP phone number
 
             let text = `✨ *CONFIRMACIÓN DE ASISTENCIA* ✨\n`;
             text += `------------------------------------\n`;
             text += `🎉 *EVENTO:* XV Años Montserrat Jasso Estrada\n`;
-            text += `👤 *INVITADO(S):* ${name}\n`;
+            text += `👤 *INVITADO(S):* ${finalName}\n`;
+            
+            if (scacGuest) {
+                text += `🎟️ *PASES ASIGNADOS:* ${finalPasses}\n`;
+            }
+
             text += `📌 *ESTATUS:* ¡Sí, con mucho gusto asistiremos!\n`;
             text += `------------------------------------\n`;
 
@@ -705,10 +811,137 @@
 
         window.addEventListener("scroll", handleScrollReveal);
 
+        // --- 8. ADMIN PANEL SCAC LOGIC ---
+        let adminGuests = JSON.parse(localStorage.getItem('scac_montserrat_guests')) || [];
+        const adminBaseUrl = window.location.origin + window.location.pathname;
+
+        function adminFormatDate(dateString) {
+            const options = { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' };
+            return new Date(dateString).toLocaleDateString('es-MX', options);
+        }
+
+        function adminGenerateText(name, passes) {
+            const link = `${adminBaseUrl}?n=${encodeURIComponent(name)}&p=${passes}`;
+            return `✨ *¡Están Invitados!* ✨\n\nHola *${name}*,\n\nTenemos el honor de invitarles a celebrar los XV Años de *Montserrat*.\n\n🎟️ Hemos reservado *${passes} pase(s)* exclusivamente en su honor.\n\nPor favor, abran el siguiente enlace para ver todos los detalles del evento, ubicación, código de vestimenta y confirmar su valiosa asistencia:\n\n👉 ${link}\n\n_¡Esperamos contar con su presencia!_`;
+        }
+
+        function adminRenderTable() {
+            const listEl = document.getElementById('adminGuestList');
+            const emptyEl = document.getElementById('adminEmptyState');
+            listEl.innerHTML = '';
+            let total = 0;
+
+            if (adminGuests.length === 0) {
+                emptyEl.classList.remove('hidden');
+            } else {
+                emptyEl.classList.add('hidden');
+                adminGuests.slice().reverse().forEach((guest, index) => {
+                    const realIndex = adminGuests.length - 1 - index;
+                    total += parseInt(guest.passes);
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0";
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-gray-800">${guest.name}</td>
+                        <td class="p-3 text-center"><span class="bg-amber-100 text-amber-800 py-1 px-3 rounded-full font-bold text-xs">${guest.passes}</span></td>
+                        <td class="p-3 text-center text-gray-500 text-xs hidden md:table-cell">${adminFormatDate(guest.createdAt)}</td>
+                        <td class="p-3 text-right space-x-1 sm:space-x-2">
+                            <button onclick="adminCopyToClipboard('${realIndex}')" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Copiar Mensaje">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button onclick="adminSendWhatsApp('${realIndex}')" class="text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 p-2 rounded-lg transition-colors" title="Enviar por WhatsApp">
+                                <i class="fab fa-whatsapp text-lg"></i>
+                            </button>
+                            <button onclick="adminDeleteGuest('${realIndex}')" class="text-red-400 hover:text-red-600 p-2 transition-colors ml-1" title="Eliminar">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    `;
+                    listEl.appendChild(tr);
+                });
+            }
+            document.getElementById('adminTotalPasses').innerText = total;
+            localStorage.setItem('scac_montserrat_guests', JSON.stringify(adminGuests));
+        }
+
+        window.adminCopyToClipboard = function(index) {
+            const guest = adminGuests[index];
+            const text = adminGenerateText(guest.name, guest.passes);
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('adminToast');
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            });
+        };
+
+        window.adminSendWhatsApp = function(index) {
+            const guest = adminGuests[index];
+            const text = adminGenerateText(guest.name, guest.passes);
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        window.adminDeleteGuest = function(index) {
+            if(confirm('¿Estás seguro de eliminar a este invitado del historial?')) {
+                adminGuests.splice(index, 1);
+                adminRenderTable();
+            }
+        };
+
+        window.adminClearHistory = function() {
+            if(confirm('⚠️ ¿ESTÁS SEGURO? Esto borrará todo el historial.')) {
+                adminGuests = [];
+                adminRenderTable();
+            }
+        };
+
         window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // VERIFICACIÓN MODO ADMIN
+            if (urlParams.get('modo') === 'admin') {
+                document.getElementById('invitationWrapper').style.display = 'none';
+                document.getElementById('adminPanel').classList.remove('hidden');
+                
+                adminRenderTable();
+                
+                document.getElementById('adminGeneratorForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('adminGuestName').value.trim();
+                    const passes = document.getElementById('adminGuestPasses').value;
+                    if (name && passes) {
+                        adminGuests.push({ name, passes, createdAt: new Date().toISOString() });
+                        adminRenderTable();
+                        e.target.reset();
+                        document.getElementById('adminGuestPasses').value = "2";
+                        adminCopyToClipboard(adminGuests.length - 1);
+                    }
+                });
+                return; // Evita que cargue la música y animaciones si es el admin
+            }
+
+            // INICIALIZACIÓN NORMAL DE LA INVITACIÓN
             animatePetals();
             initRevealAnimations();
             handleScrollReveal();
+
+            // INICIALIZAR SISTEMA SCAC PARA INVITADOS (Leer parámetros URL)
+            const n = urlParams.get('n');
+            const p = urlParams.get('p');
+
+            if (n && p) {
+                scacGuest = n;
+                scacPasses = p;
+
+                document.getElementById('scacGuestGreeting').classList.remove('hidden');
+                document.getElementById('scacNameDisplay').innerText = scacGuest;
+                document.getElementById('scacPassesDisplay').innerText = scacPasses + (scacPasses == 1 ? " PASE" : " PASES");
+
+                document.getElementById('manualNameInput').classList.add('hidden');
+                document.getElementById('guestName').removeAttribute('required');
+                
+                document.getElementById('scacRsvpCard').classList.remove('hidden');
+                document.getElementById('rsvpScacName').innerText = scacGuest;
+                document.getElementById('rsvpScacPasses').innerText = scacPasses + (scacPasses == 1 ? " Pase" : " Pases");
+            }
         };
     </script>
 </body>
