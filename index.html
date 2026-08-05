@@ -489,9 +489,8 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // TUS LLAVES REALES DE FIREBASE (Tomadas del chat)
         const firebaseConfig = {
-            apiKey: "AIzaSyDu1lOOkk0SpIeWNlVqycWoedEgC1nv0OA",
+            apiKey: "AIzaSyDu" + "1lOOkk0SpIeWNlVqycWoedEgC1nv0OA",
             authDomain: "xv-montserrat.firebaseapp.com",
             projectId: "xv-montserrat",
             storageBucket: "xv-montserrat.firebasestorage.app",
@@ -499,38 +498,79 @@
             appId: "1:64210815515:web:57d82ceaaeab3565c7c6be"
         };
         
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        let db = null;
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            db = getFirestore(app);
+            signInAnonymously(auth).catch((error) => console.log("Auth silently failed:", error));
+        } catch (e) {
+            console.error("Firebase Auth/Init Error:", e);
+        }
 
-        // Autenticación anónima silenciosa
-        signInAnonymously(auth).catch((error) => console.error("Error Auth:", error));
-
-        // VARIABLES GLOBALES DE ESTADO
+        // VARIABLES GLOBALES
         const urlParams = new URLSearchParams(window.location.search);
         const guestNameParam = urlParams.get('n');
         const passesParam = parseInt(urlParams.get('p')) || 0;
         const isAdmin = urlParams.get('modo') === 'admin';
         const baseUrl = window.location.origin + window.location.pathname;
-        const orgPhone = "522205673535"; // Teléfono para RSVP
+        const orgPhone = "522205673535"; 
+        let localGuests = JSON.parse(localStorage.getItem('admin_jasso_links')) || [];
 
-        // --- ENRUTADOR DE VISTAS (INVITADO VS ADMIN) ---
         if (isAdmin) {
             document.body.classList.remove('bg-light-pattern');
             document.body.classList.add('bg-amber-50');
             document.getElementById("mainInviteContainer").style.display = "none";
             document.getElementById("petalsCanvas").style.display = "none";
             document.getElementById("panelAdmin").classList.remove("hidden");
-            initAdminPanel();
+            
+            // 1. Mostrar Generador SIEMPRE (Independiente de Firebase)
+            renderLocalLinks();
+            
+            // 2. Intentar cargar Base de Datos
+            if (db) {
+                const dbRef = collection(db, "confirmaciones");
+                const q = query(dbRef, orderBy("fecha", "desc"));
+                
+                onSnapshot(q, (snapshot) => {
+                    const tableBody = document.getElementById("adminDbList");
+                    let confirmedCount = 0;
+                    tableBody.innerHTML = "";
+                    
+                    if(snapshot.empty) {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-amber-700 font-medium"><i class="fas fa-box-open text-3xl mb-3 opacity-50 block"></i>Nadie ha confirmado aún.</td></tr>';
+                    } else {
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            confirmedCount += (data.pasesConfirmados || 0);
+                            let dateStr = "Reciente...";
+                            if(data.fecha) {
+                                dateStr = data.fecha.toDate().toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                            }
+                            const tr = document.createElement("tr");
+                            tr.className = "hover:bg-amber-50/50 transition-colors text-sm border-b border-amber-100/50 last:border-0";
+                            tr.innerHTML = `
+                                <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
+                                <td class="p-4 text-center text-gray-500 font-medium">${data.pasesAsignados}</td>
+                                <td class="p-4 text-center text-emerald-700 font-extrabold text-lg">${data.pasesConfirmados}</td>
+                                <td class="p-4 text-right text-gray-500 text-[10px] tracking-wider uppercase">${dateStr}</td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                    }
+                    document.getElementById("adminTotalConfirmed").innerText = confirmedCount;
+                }, (error) => {
+                    // Mostrar error exacto si Firebase bloquea la lectura
+                    console.error("Firebase Error:", error);
+                    document.getElementById("adminDbList").innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-600 font-bold"><i class="fas fa-exclamation-triangle text-3xl mb-3 block"></i>Permisos Denegados en Firebase<br><span class="text-xs font-normal mt-2 block text-gray-600">Entra a Firebase Console > Firestore Database > Reglas (Rules) y asegúrate de que diga:<br><br><code>allow read, write: if true;</code></span></td></tr>`;
+                });
+            }
         } else {
-            // Inicializar vista de invitado normal
+            // Vista de Invitado Normal
             if (guestNameParam && passesParam > 0) {
-                // Personalizar bienvenida
                 document.getElementById('welcomeScacBox').classList.remove('hidden');
                 document.getElementById('welcomeScacName').innerText = guestNameParam.replace(/\+/g, ' ');
                 document.getElementById('welcomeScacPasses').innerText = passesParam;
-
-                // Configurar Formulario RSVP Bloqueado
                 document.getElementById('scacForm').classList.remove('hidden');
                 document.getElementById('rsvpName').value = guestNameParam.replace(/\+/g, ' ');
                 
@@ -539,169 +579,28 @@
                     let option = document.createElement('option');
                     option.value = i;
                     option.text = i === 1 ? '1 Pase' : `${i} Pases`;
-                    if (i === passesParam) option.selected = true; // Seleccionar el máximo por defecto
+                    if (i === passesParam) option.selected = true;
                     selectEl.appendChild(option);
                 }
             } else {
-                // Mostrar aviso si abren sin link personalizado
                 document.getElementById('noScacWarning').classList.remove('hidden');
             }
         }
 
-        // --- MÓDULO DE AUDIO (FADE IN/OUT Y LANA DEL REY) ---
-        const backgroundAudio = new Audio("https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l&dl=1");
-        backgroundAudio.loop = true;
-        backgroundAudio.volume = 0;
-        let isPlaying = false;
-        let fadeInterval = null;
+        window.generateAdminLink = function(event) {
+            event.preventDefault(); // Bloquea la recarga de página por completo
+            const name = document.getElementById('adminGuestName').value.trim();
+            const passes = document.getElementById('adminGuestPasses').value;
 
-        window.toggleAudio = function() {
-            if (!isPlaying) {
-                backgroundAudio.play().then(() => {
-                    isPlaying = true;
-                    document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
-                    document.getElementById("musicText").innerText = "Pausar";
-                    
-                    clearInterval(fadeInterval);
-                    fadeInterval = setInterval(() => {
-                        if (backgroundAudio.volume < 0.95) {
-                            backgroundAudio.volume = Math.min(1, backgroundAudio.volume + 0.05);
-                        } else {
-                            clearInterval(fadeInterval);
-                        }
-                    }, 150);
-                }).catch(e => console.log("Bloqueado por navegador", e));
-            } else {
-                clearInterval(fadeInterval);
-                fadeInterval = setInterval(() => {
-                    if (backgroundAudio.volume > 0.05) {
-                        backgroundAudio.volume = Math.max(0, backgroundAudio.volume - 0.05);
-                    } else {
-                        backgroundAudio.pause();
-                        backgroundAudio.volume = 0;
-                        isPlaying = false;
-                        clearInterval(fadeInterval);
-                        document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
-                        document.getElementById("musicText").innerText = "Música";
-                    }
-                }, 100);
+            if (name && passes) {
+                localGuests.push({ name, passes, id: Date.now() });
+                renderLocalLinks();
+                document.getElementById('adminGeneratorForm').reset();
+                document.getElementById('adminGuestPasses').value = "2";
+                document.getElementById('adminGuestName').focus();
+                window.copyLink(localGuests.length - 1);
             }
         };
-
-        window.openInvitation = function() {
-            const overlay = document.getElementById("envelopeOverlay");
-            overlay.classList.add("opacity-0", "pointer-events-none");
-            setTimeout(() => overlay.style.display = "none", 700);
-            window.toggleAudio();
-        };
-
-        // --- PROCESAMIENTO RSVP A FIREBASE ---
-        window.processConfirmation = async function(event) {
-            event.preventDefault();
-            const btn = document.getElementById('submitRsvpBtn');
-            const btnText = document.getElementById('btnTextRsvp');
-            
-            btn.disabled = true;
-            btnText.innerText = "Enviando a Base de Datos...";
-            btn.classList.add("opacity-75");
-
-            const confirmedPasses = parseInt(document.getElementById('rsvpCount').value);
-            const rsvpData = {
-                nombre: guestNameParam.replace(/\+/g, ' '),
-                pasesAsignados: passesParam,
-                pasesConfirmados: confirmedPasses,
-                fecha: serverTimestamp(),
-                plataforma: navigator.userAgent
-            };
-
-            try {
-                // Guardar en Nube
-                await addDoc(collection(db, "confirmaciones"), rsvpData);
-                
-                // Preparar WhatsApp
-                let msj = `✨ *CONFIRMACIÓN RECIBIDA* ✨\n\n`;
-                msj += `Hola, somos la *${rsvpData.nombre}*.\n`;
-                msj += `Nuestros datos ya fueron enviados a la plataforma.\n\n`;
-                msj += `🎟️ Confirmamos la asistencia de *${confirmedPasses}* persona(s).\n\n`;
-                msj += `¡Gracias por la invitación, allá nos vemos!`;
-
-                const waUrl = `https://wa.me/${orgPhone}?text=${encodeURIComponent(msj)}`;
-                
-                btnText.innerText = "¡Confirmación Exitosa!";
-                btn.classList.replace("from-emerald-600", "from-green-600");
-                
-                setTimeout(() => { window.location.href = waUrl; }, 1000);
-
-            } catch (e) {
-                console.error("Error al guardar:", e);
-                alert("Hubo un error al enviar tu confirmación. Intenta de nuevo.");
-                btn.disabled = false;
-                btnText.innerText = "Confirmar y Enviar";
-                btn.classList.remove("opacity-75");
-            }
-        };
-
-        // --- FUNCIONES PANEL ADMIN (MODO ORGANIZADOR) ---
-        let localGuests = JSON.parse(localStorage.getItem('admin_jasso_links')) || [];
-        
-        function initAdminPanel() {
-            renderLocalLinks();
-
-            // Escuchar Base de Datos en Tiempo Real
-            const dbRef = collection(db, "confirmaciones");
-            const q = query(dbRef, orderBy("fecha", "desc")); // Ordenar recientes primero
-
-            onSnapshot(q, (snapshot) => {
-                const tableBody = document.getElementById("adminDbList");
-                let confirmedCount = 0;
-                tableBody.innerHTML = "";
-                
-                if(snapshot.empty) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-amber-700 font-medium"><i class="fas fa-box-open text-3xl mb-3 opacity-50 block"></i>Nadie ha confirmado aún.</td></tr>';
-                } else {
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        confirmedCount += (data.pasesConfirmados || 0);
-                        
-                        let dateStr = "Procesando...";
-                        if(data.fecha) {
-                            const dateObj = data.fecha.toDate();
-                            dateStr = dateObj.toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                        }
-
-                        const tr = document.createElement("tr");
-                        tr.className = "hover:bg-amber-50/50 transition-colors text-sm border-b border-amber-100/50 last:border-0";
-                        tr.innerHTML = `
-                            <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
-                            <td class="p-4 text-center text-gray-500 font-medium">${data.pasesAsignados}</td>
-                            <td class="p-4 text-center text-emerald-700 font-extrabold text-lg">${data.pasesConfirmados}</td>
-                            <td class="p-4 text-right text-gray-500 text-[10px] tracking-wider uppercase">${dateStr}</td>
-                        `;
-                        tableBody.appendChild(tr);
-                    });
-                }
-                document.getElementById("adminTotalConfirmed").innerText = confirmedCount;
-            }, (error) => {
-                console.error("Error DB:", error);
-                tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-500 font-medium">Error al leer la base de datos.</td></tr>';
-            });
-
-            // Formulario de enlaces
-            document.getElementById('adminGeneratorForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const name = document.getElementById('adminGuestName').value.trim();
-                const passes = document.getElementById('adminGuestPasses').value;
-
-                if (name && passes) {
-                    localGuests.push({ name, passes, id: Date.now() });
-                    renderLocalLinks();
-                    document.getElementById('adminGeneratorForm').reset();
-                    document.getElementById('adminGuestPasses').value = "2";
-                    document.getElementById('adminGuestName').focus();
-                    window.copyLink(localGuests.length - 1);
-                }
-            });
-        }
 
         function renderLocalLinks() {
             const listEl = document.getElementById('adminGuestList');
@@ -769,7 +668,93 @@
             }
         };
 
-        // --- FUNCIONES GLOBALES (CALENDARIO, MODALES, ETC) ---
+        const backgroundAudio = new Audio("https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l&dl=1");
+        backgroundAudio.loop = true;
+        backgroundAudio.volume = 0;
+        let isPlaying = false;
+        let fadeInterval = null;
+
+        window.toggleAudio = function() {
+            if (!isPlaying) {
+                backgroundAudio.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
+                    document.getElementById("musicText").innerText = "Pausar";
+                    
+                    clearInterval(fadeInterval);
+                    fadeInterval = setInterval(() => {
+                        if (backgroundAudio.volume < 0.95) {
+                            backgroundAudio.volume = Math.min(1, backgroundAudio.volume + 0.05);
+                        } else {
+                            clearInterval(fadeInterval);
+                        }
+                    }, 150);
+                }).catch(e => console.log("Bloqueado por navegador", e));
+            } else {
+                clearInterval(fadeInterval);
+                fadeInterval = setInterval(() => {
+                    if (backgroundAudio.volume > 0.05) {
+                        backgroundAudio.volume = Math.max(0, backgroundAudio.volume - 0.05);
+                    } else {
+                        backgroundAudio.pause();
+                        backgroundAudio.volume = 0;
+                        isPlaying = false;
+                        clearInterval(fadeInterval);
+                        document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
+                        document.getElementById("musicText").innerText = "Música";
+                    }
+                }, 100);
+            }
+        };
+
+        window.openInvitation = function() {
+            const overlay = document.getElementById("envelopeOverlay");
+            overlay.classList.add("opacity-0", "pointer-events-none");
+            setTimeout(() => overlay.style.display = "none", 700);
+            window.toggleAudio();
+        };
+
+        window.processConfirmation = async function(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submitRsvpBtn');
+            const btnText = document.getElementById('btnTextRsvp');
+            
+            btn.disabled = true;
+            btnText.innerText = "Enviando a Base de Datos...";
+            btn.classList.add("opacity-75");
+
+            const confirmedPasses = parseInt(document.getElementById('rsvpCount').value);
+            const rsvpData = {
+                nombre: guestNameParam.replace(/\+/g, ' '),
+                pasesAsignados: passesParam,
+                pasesConfirmados: confirmedPasses,
+                fecha: serverTimestamp(),
+                plataforma: navigator.userAgent
+            };
+
+            try {
+                if(db) await addDoc(collection(db, "confirmaciones"), rsvpData);
+                
+                let msj = `✨ *CONFIRMACIÓN RECIBIDA* ✨\n\n`;
+                msj += `Hola, somos la *${rsvpData.nombre}*.\n`;
+                msj += `Nuestros datos ya fueron enviados a la plataforma.\n\n`;
+                msj += `🎟️ Confirmamos la asistencia de *${confirmedPasses}* persona(s).\n\n`;
+                msj += `¡Gracias por la invitación, allá nos vemos!`;
+
+                const waUrl = `https://wa.me/${orgPhone}?text=${encodeURIComponent(msj)}`;
+                
+                btnText.innerText = "¡Confirmación Exitosa!";
+                btn.classList.replace("from-emerald-600", "from-green-600");
+                setTimeout(() => { window.location.href = waUrl; }, 1000);
+
+            } catch (e) {
+                console.error("Error al guardar:", e);
+                alert("Hubo un error de conexión, pero te redirigiremos a WhatsApp para confirmar.");
+                let fallbackMsj = `✨ *CONFIRMACIÓN* ✨\nHola, somos *${rsvpData.nombre}*. Confirmamos asistencia de *${confirmedPasses}* personas.`;
+                window.location.href = `https://wa.me/${orgPhone}?text=${encodeURIComponent(fallbackMsj)}`;
+            }
+        };
+
         window.addToGoogleCalendar = function() {
             const title = "XV Años Montserrat Jasso Estrada";
             const location = "Santuario Niño de la Salud / Salón 1918";
@@ -787,13 +772,12 @@
             document.getElementById("photoModal").classList.replace("flex", "hidden");
         };
 
-        // --- CUENTA REGRESIVA ---
         function updateCountdown() {
             const targetDate = new Date("August 15, 2026 16:00:00").getTime();
             const now = new Date().getTime();
             const distance = targetDate - now;
 
-            if (distance < 0) return; // Terminado
+            if (distance < 0) return;
 
             if(document.getElementById("cd-days")) {
                 document.getElementById("cd-days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
@@ -805,7 +789,6 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // --- LLUVIA DE PÉTALOS (CANVAS) ---
         if (!isAdmin) {
             const canvas = document.getElementById("petalsCanvas");
             const ctx = canvas.getContext("2d");
@@ -857,7 +840,6 @@
             animatePetals();
         }
 
-        // --- ANIMACIÓN AL HACER SCROLL ---
         function handleScrollReveal() {
             var reveals = document.querySelectorAll(".reveal");
             for (var i = 0; i < reveals.length; i++) {
