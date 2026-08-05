@@ -480,18 +480,19 @@
                         <input type="text" id="guestName" required placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
                     </div>
 
-                    <!-- Tarjeta Dinámica SCAC (Oculta por defecto) -->
-                    <div id="scacRsvpCard" class="hidden p-4 bg-amber-50 border border-amber-300 rounded-xl text-center shadow-inner">
-                        <p class="text-[10px] uppercase tracking-widest font-bold text-amber-800 mb-1">Pases Asignados a:</p>
-                        <h4 id="rsvpScacName" class="font-serif-heading text-lg font-bold text-amber-950"></h4>
-                        <div class="mt-2 text-ruby-800 font-bold text-sm bg-white/60 inline-block px-3 py-1 rounded-lg border border-amber-200">
-                            <i class="fas fa-ticket-alt mr-1"></i> <span id="rsvpScacPasses"></span>
-                        </div>
+                    <!-- Selección de Pases Confirmados (Restringido) -->
+                    <div id="passSelectionDiv">
+                        <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">¿Cuántos pases utilizarán? *</label>
+                        <select id="guestCountSelect" required class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm font-bold">
+                            <option value="1">1 Pase</option>
+                            <option value="2" selected>2 Pases</option>
+                        </select>
+                        <p id="maxPassesMsg" class="text-[10px] text-ruby-700 mt-1 font-bold hidden"><i class="fas fa-lock mr-1"></i> Limitado a los pases asignados a tu familia</p>
                     </div>
 
                     <button type="submit" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-emerald-900/20 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-95 mt-4">
                         <i class="fab fa-whatsapp text-xl"></i>
-                        <span>Confirmar por WhatsApp</span>
+                        <span>Confirmar Asistencia</span>
                     </button>
                 </form>
             </section>
@@ -621,69 +622,51 @@
     </div>
 
     <script>
-        // --- 1. AUDIO SYNTHESIZER / BACKGROUND MUSIC ---
-        let audioCtx = null;
+        // --- 1. AUDIO PLAYER & FADE EFFECT ---
+        let bgMusic = new Audio("https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l");
+        bgMusic.loop = true;
+        bgMusic.volume = 0; // Inicia en 0 para el fade-in
         let isPlaying = false;
-        let melodyInterval = null;
+        let fadeInterval = null;
 
         function toggleAudio() {
             if (!isPlaying) {
-                startMelody();
-                isPlaying = true;
-                document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
-                document.getElementById("musicText").innerText = "Pausar";
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
+                    document.getElementById("musicText").innerText = "Pausar";
+                    
+                    // Efecto de desvanecido de entrada (Fade-in)
+                    clearInterval(fadeInterval);
+                    let vol = bgMusic.volume;
+                    fadeInterval = setInterval(() => {
+                        if (vol < 0.95) {
+                            vol += 0.05;
+                            bgMusic.volume = vol;
+                        } else {
+                            bgMusic.volume = 1;
+                            clearInterval(fadeInterval);
+                        }
+                    }, 150); // Velocidad del desvanecido
+                }).catch(e => console.log("Audio requires user interaction first.", e));
             } else {
-                stopMelody();
-                isPlaying = false;
-                document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
-                document.getElementById("musicText").innerText = "Música";
+                // Efecto de desvanecido de salida (Fade-out)
+                clearInterval(fadeInterval);
+                let vol = bgMusic.volume;
+                fadeInterval = setInterval(() => {
+                    if (vol > 0.05) {
+                        vol -= 0.05;
+                        bgMusic.volume = vol;
+                    } else {
+                        bgMusic.volume = 0;
+                        bgMusic.pause();
+                        clearInterval(fadeInterval);
+                        isPlaying = false;
+                        document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
+                        document.getElementById("musicText").innerText = "Música";
+                    }
+                }, 100);
             }
-        }
-
-        function startMelody() {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                const notes = [
-                    261.63, 329.63, 392.00, 523.25, // C E G C
-                    220.00, 261.63, 329.63, 440.00, // A C E A
-                    174.61, 220.00, 261.63, 349.23, // F A C F
-                    196.00, 246.94, 293.66, 392.00  // G B D G
-                ];
-                let noteIndex = 0;
-
-                melodyInterval = setInterval(() => {
-                    if (!isPlaying) return;
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(notes[noteIndex], audioCtx.currentTime);
-                    
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
-
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 1.8);
-
-                    noteIndex = (noteIndex + 1) % notes.length;
-                }, 600);
-
-            } catch(e) {
-                console.log("Audio not supported", e);
-            }
-        }
-
-        function stopMelody() {
-            if (melodyInterval) clearInterval(melodyInterval);
         }
 
         // --- 2. OPEN INVITATION OVERLAY ---
@@ -718,21 +701,44 @@
         let scacGuest = null;
         let scacPasses = null;
 
-        // --- 4. WHATSAPP CONFIRMATION ---
+        // --- 4. WHATSAPP & FORMS CONFIRMATION ---
         function processConfirmation(event) {
             event.preventDefault();
             
             let finalName = scacGuest ? scacGuest : document.getElementById("guestName").value.trim();
-            let finalPasses = scacPasses ? scacPasses : document.getElementById("guestCount").value;
+            let assignedPasses = scacPasses ? scacPasses : "Entrada libre";
+            let confirmedPasses = document.getElementById("guestCountSelect").value;
 
-            const phoneNumber = "522205673535"; // Target RSVP phone number
+            // --- 4.1 ENVÍO INVISIBLE A GOOGLE FORMS (Sistema de Base de Datos Segura) ---
+            // Cuando tengas tu enlace real del Forms de Google, reemplaza esto:
+            const googleFormURL = "URL_DE_TU_GOOGLE_FORMS"; 
+            
+            // Y reemplaza estos entry.ID con los correspondientes a tus 3 preguntas en Google Forms
+            const formEntryNombre = "entry.XXXXXXX"; // Pregunta: Nombre de Familia
+            const formEntryAsignados = "entry.YYYYYYY"; // Pregunta: Pases Asignados
+            const formEntryConfirmados = "entry.ZZZZZZZ"; // Pregunta: Pases Confirmados
+
+            if (googleFormURL.startsWith("https://docs.google.com")) {
+                const formData = new URLSearchParams();
+                formData.append(formEntryNombre, finalName);
+                formData.append(formEntryAsignados, assignedPasses);
+                formData.append(formEntryConfirmados, confirmedPasses);
+
+                fetch(googleFormURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Evita bloqueos de seguridad del navegador, lo envía en silencio
+                    body: formData
+                }).catch(err => console.log(err));
+            }
+
+            // --- 4.2 MENSAJE PREESTABLECIDO PARA WHATSAPP ---
+            const phoneNumber = "522205673535"; 
 
             let text = `✨ *CONFIRMACIÓN DE ASISTENCIA* ✨\n`;
             text += `------------------------------------\n`;
-            text += `🎉 *EVENTO:* XV Años Montserrat Jasso Estrada\n`;
-            text += `👤 *INVITADO(S):* ${finalName}\n`;
-            text += `🎟️ *PASES ASIGNADOS:* ${finalPasses}\n`;
-            text += `📌 *ESTATUS:* ¡Sí, con mucho gusto asistiremos!\n`;
+            text += `Hola, acabo de confirmar mi asistencia en la invitación digital. Mis datos ya fueron enviados a la base de datos (Forms) automáticamente.\n\n`;
+            text += `👤 *Familia:* ${finalName}\n`;
+            text += `🎟️ *Asistiremos:* ${confirmedPasses} de ${assignedPasses} pases asignados.\n`;
             text += `------------------------------------\n`;
 
             const encodedText = encodeURIComponent(text);
@@ -993,7 +999,7 @@
 
             if (n && p) {
                 scacGuest = n;
-                scacPasses = p;
+                scacPasses = parseInt(p);
 
                 if(document.getElementById('scacGuestGreeting')) {
                     document.getElementById('scacGuestGreeting').classList.remove('hidden');
@@ -1001,14 +1007,24 @@
                     document.getElementById('scacPassesDisplay').innerText = scacPasses + (scacPasses == 1 ? " PASE" : " PASES");
                 }
 
-                // Ocultar inputs manuales en form de RSVP
-                if(document.getElementById('guestName')) {
-                    document.getElementById('guestName').parentElement.classList.add('hidden');
+                // Ocultar input manual de nombre
+                if(document.getElementById('manualNameInput')) {
+                    document.getElementById('manualNameInput').classList.add('hidden');
                     document.getElementById('guestName').removeAttribute('required');
                 }
-                if(document.getElementById('guestCount')) {
-                    document.getElementById('guestCount').parentElement.classList.add('hidden');
-                    document.getElementById('guestCount').removeAttribute('required');
+                
+                // Configurar desplegable de pases para evitar manipulación superior al límite
+                const selectEl = document.getElementById('guestCountSelect');
+                if(selectEl) {
+                    selectEl.innerHTML = ''; // Limpiar opciones por defecto
+                    for(let i = 1; i <= scacPasses; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = i;
+                        opt.innerText = i + (i === 1 ? " Pase" : " Pases");
+                        if(i === scacPasses) opt.selected = true; // Seleccionar el máximo por defecto
+                        selectEl.appendChild(opt);
+                    }
+                    document.getElementById('maxPassesMsg').classList.remove('hidden');
                 }
                 
                 // Crear y mostrar tarjeta de pases pre-asignados en RSVP
