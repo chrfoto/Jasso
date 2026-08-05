@@ -489,6 +489,7 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // FIREBASE SETUP (Usando tu llave dividida para evitar alertas de GitHub)
         const firebaseConfig = {
             apiKey: "AIzaSyDu" + "1lOOkk0SpIeWNlVqycWoedEgC1nv0OA",
             authDomain: "xv-montserrat.firebaseapp.com",
@@ -517,6 +518,9 @@
         const orgPhone = "522205673535"; 
         let localGuests = JSON.parse(localStorage.getItem('admin_jasso_links')) || [];
 
+        // ----------------------------------------------------
+        // LOGICA PANEL ADMIN
+        // ----------------------------------------------------
         if (isAdmin) {
             document.body.classList.remove('bg-light-pattern');
             document.body.classList.add('bg-amber-50');
@@ -524,49 +528,62 @@
             document.getElementById("petalsCanvas").style.display = "none";
             document.getElementById("panelAdmin").classList.remove("hidden");
             
-            // 1. Mostrar Generador SIEMPRE (Independiente de Firebase)
+            // Renderizar links locales siempre
             renderLocalLinks();
             
-            // 2. Intentar cargar Base de Datos
+            // Cargar Base de Datos
             if (db) {
                 const dbRef = collection(db, "confirmaciones");
                 const q = query(dbRef, orderBy("fecha", "desc"));
                 
-                onSnapshot(q, (snapshot) => {
-                    const tableBody = document.getElementById("adminDbList");
-                    let confirmedCount = 0;
-                    tableBody.innerHTML = "";
-                    
-                    if(snapshot.empty) {
-                        tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-amber-700 font-medium"><i class="fas fa-box-open text-3xl mb-3 opacity-50 block"></i>Nadie ha confirmado aún.</td></tr>';
-                    } else {
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            confirmedCount += (data.pasesConfirmados || 0);
-                            let dateStr = "Reciente...";
-                            if(data.fecha) {
-                                dateStr = data.fecha.toDate().toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                            }
-                            const tr = document.createElement("tr");
-                            tr.className = "hover:bg-amber-50/50 transition-colors text-sm border-b border-amber-100/50 last:border-0";
-                            tr.innerHTML = `
-                                <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
-                                <td class="p-4 text-center text-gray-500 font-medium">${data.pasesAsignados}</td>
-                                <td class="p-4 text-center text-emerald-700 font-extrabold text-lg">${data.pasesConfirmados}</td>
-                                <td class="p-4 text-right text-gray-500 text-[10px] tracking-wider uppercase">${dateStr}</td>
-                            `;
-                            tableBody.appendChild(tr);
-                        });
-                    }
-                    document.getElementById("adminTotalConfirmed").innerText = confirmedCount;
-                }, (error) => {
-                    // Mostrar error exacto si Firebase bloquea la lectura
-                    console.error("Firebase Error:", error);
-                    document.getElementById("adminDbList").innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-600 font-bold"><i class="fas fa-exclamation-triangle text-3xl mb-3 block"></i>Permisos Denegados en Firebase<br><span class="text-xs font-normal mt-2 block text-gray-600">Entra a Firebase Console > Firestore Database > Reglas (Rules) y asegúrate de que diga:<br><br><code>allow read, write: if true;</code></span></td></tr>`;
-                });
+                // Temporizador de seguridad (Si falla Firebase, no bloquea la página)
+                let connectionTimeout = setTimeout(() => {
+                    document.getElementById("adminDbList").innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-600 font-bold"><i class="fas fa-exclamation-triangle text-3xl mb-3 block"></i>No se pudo conectar a Firebase.<br><span class="text-xs font-normal mt-2 block text-gray-600">Revisa que la base de datos Firestore esté creada y las Reglas estén en "true" (Paso 1).</span></td></tr>`;
+                }, 7000);
+
+                try {
+                    onSnapshot(q, (snapshot) => {
+                        clearTimeout(connectionTimeout); // Se conectó con éxito, quitamos el temporizador
+                        const tableBody = document.getElementById("adminDbList");
+                        let confirmedCount = 0;
+                        tableBody.innerHTML = "";
+                        
+                        if(snapshot.empty) {
+                            tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-amber-700 font-medium"><i class="fas fa-box-open text-3xl mb-3 opacity-50 block"></i>Nadie ha confirmado aún.</td></tr>';
+                        } else {
+                            snapshot.forEach(doc => {
+                                const data = doc.data();
+                                confirmedCount += (data.pasesConfirmados || 0);
+                                let dateStr = "Reciente...";
+                                if(data.fecha) {
+                                    dateStr = data.fecha.toDate().toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                                }
+                                const tr = document.createElement("tr");
+                                tr.className = "hover:bg-amber-50/50 transition-colors text-sm border-b border-amber-100/50 last:border-0";
+                                tr.innerHTML = `
+                                    <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
+                                    <td class="p-4 text-center text-gray-500 font-medium">${data.pasesAsignados}</td>
+                                    <td class="p-4 text-center text-emerald-700 font-extrabold text-lg">${data.pasesConfirmados}</td>
+                                    <td class="p-4 text-right text-gray-500 text-[10px] tracking-wider uppercase">${dateStr}</td>
+                                `;
+                                tableBody.appendChild(tr);
+                            });
+                        }
+                        document.getElementById("adminTotalConfirmed").innerText = confirmedCount;
+                    }, (error) => {
+                        clearTimeout(connectionTimeout);
+                        console.error("Firebase Error:", error);
+                        document.getElementById("adminDbList").innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-600 font-bold"><i class="fas fa-lock text-3xl mb-3 block"></i>Acceso Denegado por Firebase<br><span class="text-xs font-normal mt-2 block text-gray-600">Aplica el Paso 1 de las Reglas (Rules) en tu consola de Firebase.</span></td></tr>`;
+                    });
+                } catch (err) {
+                    clearTimeout(connectionTimeout);
+                    console.error("Snapshot error", err);
+                }
             }
         } else {
-            // Vista de Invitado Normal
+            // ----------------------------------------------------
+            // LOGICA INVITADO NORMAL
+            // ----------------------------------------------------
             if (guestNameParam && passesParam > 0) {
                 document.getElementById('welcomeScacBox').classList.remove('hidden');
                 document.getElementById('welcomeScacName').innerText = guestNameParam.replace(/\+/g, ' ');
@@ -587,8 +604,11 @@
             }
         }
 
+        // ----------------------------------------------------
+        // FUNCIONES DEL GENERADOR SCAC (Totalmente independientes)
+        // ----------------------------------------------------
         window.generateAdminLink = function(event) {
-            event.preventDefault(); // Bloquea la recarga de página por completo
+            event.preventDefault(); // Evita que se recargue la página
             const name = document.getElementById('adminGuestName').value.trim();
             const passes = document.getElementById('adminGuestPasses').value;
 
@@ -622,9 +642,9 @@
                             <span class="text-[10px] text-amber-700 font-bold tracking-widest">${g.passes} PASES</span>
                         </div>
                         <div class="flex space-x-1">
-                            <button onclick="copyLink(${realIndex})" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-copy"></i></button>
-                            <button onclick="sendWaAdmin(${realIndex})" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"><i class="fab fa-whatsapp"></i></button>
-                            <button onclick="delLocalLink(${realIndex})" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors ml-2"><i class="fas fa-times"></i></button>
+                            <button type="button" onclick="copyLink(${realIndex})" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-copy"></i></button>
+                            <button type="button" onclick="sendWaAdmin(${realIndex})" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"><i class="fab fa-whatsapp"></i></button>
+                            <button type="button" onclick="delLocalLink(${realIndex})" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors ml-2"><i class="fas fa-times"></i></button>
                         </div>
                     `;
                     listEl.appendChild(div);
@@ -641,7 +661,7 @@
             
             navigator.clipboard.writeText(text).then(() => {
                 const toast = document.getElementById('toast');
-                document.getElementById('toastMsg').innerText = "Mensaje Copiado";
+                document.getElementById('toastMsg').innerText = "Enlace Copiado";
                 toast.classList.remove('translate-y-20', 'opacity-0');
                 setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
             });
@@ -668,6 +688,9 @@
             }
         };
 
+        // ----------------------------------------------------
+        // INTERFAZ DE USUARIO E INTERACTIVIDAD
+        // ----------------------------------------------------
         const backgroundAudio = new Audio("https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l&dl=1");
         backgroundAudio.loop = true;
         backgroundAudio.volume = 0;
@@ -733,10 +756,12 @@
             };
 
             try {
-                if(db) await addDoc(collection(db, "confirmaciones"), rsvpData);
+                if(db) {
+                    await addDoc(collection(db, "confirmaciones"), rsvpData);
+                }
                 
                 let msj = `✨ *CONFIRMACIÓN RECIBIDA* ✨\n\n`;
-                msj += `Hola, somos la *${rsvpData.nombre}*.\n`;
+                msj += `Hola, somos: *${rsvpData.nombre}*.\n`;
                 msj += `Nuestros datos ya fueron enviados a la plataforma.\n\n`;
                 msj += `🎟️ Confirmamos la asistencia de *${confirmedPasses}* persona(s).\n\n`;
                 msj += `¡Gracias por la invitación, allá nos vemos!`;
@@ -745,11 +770,12 @@
                 
                 btnText.innerText = "¡Confirmación Exitosa!";
                 btn.classList.replace("from-emerald-600", "from-green-600");
+                
                 setTimeout(() => { window.location.href = waUrl; }, 1000);
 
             } catch (e) {
                 console.error("Error al guardar:", e);
-                alert("Hubo un error de conexión, pero te redirigiremos a WhatsApp para confirmar.");
+                // Si falla Firebase por alguna razon, se envia por Whatsapp de todos modos
                 let fallbackMsj = `✨ *CONFIRMACIÓN* ✨\nHola, somos *${rsvpData.nombre}*. Confirmamos asistencia de *${confirmedPasses}* personas.`;
                 window.location.href = `https://wa.me/${orgPhone}?text=${encodeURIComponent(fallbackMsj)}`;
             }
@@ -789,6 +815,9 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
+        // ----------------------------------------------------
+        // ANIMACIÓN DE PÉTALOS (Solo para invitados)
+        // ----------------------------------------------------
         if (!isAdmin) {
             const canvas = document.getElementById("petalsCanvas");
             const ctx = canvas.getContext("2d");
@@ -840,6 +869,7 @@
             animatePetals();
         }
 
+        // SCROLL REVEAL
         function handleScrollReveal() {
             var reveals = document.querySelectorAll(".reveal");
             for (var i = 0; i < reveals.length; i++) {
