@@ -12,15 +12,9 @@
             theme: {
                 extend: {
                     colors: {
-                        gold: {
-                            50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 500: '#d97706', 600: '#b45309', 700: '#8f410a', 800: '#78350f', 900: '#451a03'
-                        },
-                        ruby: {
-                            50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e', 700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519'
-                        },
-                        cream: {
-                            50: '#fdfbf7', 100: '#f8f4eb', 200: '#f1e8d8', 300: '#e5d5be'
-                        }
+                        gold: { 50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 500: '#d97706', 600: '#b45309', 700: '#8f410a', 800: '#78350f', 900: '#451a03' },
+                        ruby: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 500: '#f43f5e', 700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519' },
+                        cream: { 50: '#fdfbf7', 100: '#f8f4eb', 200: '#f1e8d8', 300: '#e5d5be' }
                     },
                     fontFamily: {
                         script: ['Great Vibes', 'cursive'],
@@ -33,12 +27,10 @@
         }
     </script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -55,9 +47,7 @@
 
         .bg-light-pattern {
             background-color: #fdfbf7;
-            background-image: 
-                radial-gradient(#e2d5c3 0.8px, transparent 0.8px), 
-                radial-gradient(#e2d5c3 0.8px, #fdfbf7 0.8px);
+            background-image: radial-gradient(#e2d5c3 0.8px, transparent 0.8px), radial-gradient(#e2d5c3 0.8px, #fdfbf7 0.8px);
             background-size: 32px 32px;
             background-position: 0 0, 16px 16px;
         }
@@ -81,76 +71,76 @@
             box-shadow: 0 12px 32px -4px rgba(190, 18, 60, 0.08);
         }
 
+        .glass-panel-admin {
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(180, 140, 90, 0.15);
+        }
+
         @keyframes float-gentle {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-7px); }
         }
         .animate-float { animation: float-gentle 3.5s infinite ease-in-out; }
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(35px);
-            transition: all 0.9s cubic-bezier(0.5, 0, 0, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .reveal { opacity: 0; transform: translateY(35px); transition: all 0.9s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
     </style>
 </head>
-<body class="bg-light-pattern text-gray-800 font-body overflow-x-hidden antialiased selection:bg-gold-200 selection:text-gold-900">
+<body class="bg-light-pattern text-gray-800 font-body overflow-x-hidden antialiased selection:bg-gold-200 selection:text-gold-900 min-h-screen flex flex-col relative">
 
-    <!-- WRAPPER PRINCIPAL -->
-    <div id="invitationWrapper">
+    <!-- Textura de fondo global -->
+    <div class="fixed inset-0 z-0 opacity-[0.15] pointer-events-none mix-blend-multiply" 
+         style="background-image: url('https://i.imgur.com/r035ySS.jpeg'), url('https://i.imgur.com/r035ySS.jpeg'); background-size: 250px, 600px; background-repeat: repeat, repeat;">
+    </div>
 
-        <!-- Background Texture -->
-        <div class="fixed inset-0 z-0 opacity-[0.15] pointer-events-none mix-blend-multiply" 
-             style="background-image: url('https://i.imgur.com/r035ySS.jpeg'), url('https://i.imgur.com/r035ySS.jpeg'); background-size: 250px, 600px; background-repeat: repeat, repeat;">
-        </div>
+    <!-- Lluvia de pétalos -->
+    <canvas id="petalsCanvas" class="fixed inset-0 pointer-events-none z-[5] w-full h-full"></canvas>
 
-        <canvas id="petalsCanvas" class="fixed inset-0 pointer-events-none z-10 w-full h-full"></canvas>
-
+    <!-- ========================================== -->
+    <!--          CONTENEDOR DE LA INVITACIÓN       -->
+    <!-- ========================================== -->
+    <div id="mainInviteContainer">
+        
+        <!-- Botón de Música Flotante -->
         <div class="fixed bottom-5 right-5 z-50">
-            <button id="musicToggleBtn" onclick="toggleAudio()" aria-label="Reproducir música" class="glass-card-light text-amber-800 p-4 rounded-full shadow-2xl border border-amber-300 hover:bg-amber-100/80 transition-all duration-300 flex items-center justify-center space-x-2 group">
+            <button id="musicToggleBtn" onclick="toggleAudio()" aria-label="Reproducir música de fondo" class="glass-card-light text-amber-800 p-4 rounded-full shadow-2xl border border-amber-300 hover:bg-amber-100/80 transition-all duration-300 flex items-center justify-center space-x-2 group">
                 <i id="musicIcon" class="fas fa-music text-xl text-amber-700 animate-bounce"></i>
                 <span id="musicText" class="text-xs font-sans-clean font-semibold hidden group-hover:inline pr-1 text-amber-900">Música</span>
             </button>
         </div>
 
-        <audio id="bgMusic" loop preload="auto">
-            <source src="https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l&dl=1" type="audio/mpeg">
-        </audio>
-
-        <div id="envelopeOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-700 overflow-hidden">
-            <img src="https://i.imgur.com/99RV5jM.jpeg" alt="Fondo Bienvenida" class="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.75]">
+        <!-- Pantalla de Bienvenida (Sobre) -->
+        <div id="envelopeOverlay" class="fixed inset-0 z-[60] flex items-center justify-center p-4 transition-opacity duration-700 overflow-hidden">
+            <img src="https://i.imgur.com/99RV5jM.jpeg" alt="Portada" class="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.75]">
             <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-[#fdfbf7]/90 backdrop-blur-[3px]"></div>
 
-            <div class="text-center max-w-sm w-full glass-card-light p-10 rounded-3xl relative overflow-hidden animate-float z-10 border border-amber-300 shadow-2xl">
+            <div class="text-center max-w-sm w-full glass-card-light p-8 rounded-3xl relative overflow-hidden animate-float z-10 border border-amber-300 shadow-2xl">
                 <div class="absolute inset-3 border border-amber-200/60 rounded-2xl pointer-events-none"></div>
                 
                 <div class="mb-4 relative z-10">
                     <span class="text-[10px] font-sans-clean uppercase tracking-[0.3em] text-amber-800 font-bold">Invitación Especial</span>
                 </div>
 
-                <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-[#fdfbf7] border border-amber-300 shadow-lg flex items-center justify-center relative z-10">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-[#fdfbf7] border border-amber-300 shadow-lg flex items-center justify-center relative z-10">
                     <div class="w-16 h-16 rounded-full border border-amber-200 flex items-center justify-center">
                         <span class="font-script text-4xl text-amber-800 pt-1">M</span>
+                    </div>
+                </div>
+
+                <!-- Personalización SCAC -->
+                <div id="welcomeScacBox" class="hidden relative z-10 bg-amber-50/80 border border-amber-200 rounded-xl p-3 mb-5 mt-2">
+                    <p class="text-[9px] uppercase tracking-widest text-amber-900 font-sans-clean font-bold mb-1">Especialmente para:</p>
+                    <p id="welcomeScacName" class="font-serif-heading text-lg font-bold text-amber-950"></p>
+                    <div class="inline-block bg-amber-800 text-white text-[10px] uppercase tracking-widest px-3 py-1 rounded-full mt-2 font-bold shadow-sm">
+                        <i class="fas fa-ticket-alt mr-1"></i> <span id="welcomeScacPasses"></span> Pases
                     </div>
                 </div>
 
                 <div class="relative z-10">
                     <h1 class="font-serif-heading text-2xl text-amber-950 tracking-widest mb-1 font-bold">Montserrat</h1>
                     <p class="font-script text-3xl text-ruby-800 mb-6 font-bold">Mis XV Años</p>
-                </div>
-
-                <!-- SALUDO DINÁMICO SCAC -->
-                <div id="scacGuestGreeting" class="relative z-10 mb-6 hidden">
-                    <div class="w-12 h-[1px] bg-amber-300 mx-auto mb-4"></div>
-                    <p class="text-[10px] font-sans-clean uppercase tracking-[0.3em] text-amber-800 font-bold mb-2">Especialmente para:</p>
-                    <h2 id="scacNameDisplay" class="font-serif-heading text-xl text-amber-950 font-bold leading-tight px-2"></h2>
-                    <div class="mt-3 inline-block px-4 py-1.5 bg-amber-100 border border-amber-300 rounded-full shadow-sm">
-                        <span id="scacPassesDisplay" class="text-xs font-sans-clean text-amber-900 font-bold tracking-widest uppercase"></span>
-                    </div>
                 </div>
 
                 <button onclick="openInvitation()" class="relative z-10 w-full py-3.5 px-6 rounded-xl bg-amber-900 hover:bg-amber-800 text-white font-sans-clean font-bold tracking-widest uppercase text-xs shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
@@ -160,10 +150,10 @@
             </div>
         </div>
 
-        <!-- CONTENIDO INVITACIÓN -->
+        <!-- Cuerpo Principal de la Invitación -->
         <main class="relative z-20 w-full">
             <section class="relative w-full h-screen flex flex-col justify-between items-center text-center overflow-hidden">
-                <img src="https://i.imgur.com/99RV5jM.jpeg" alt="Portada" class="absolute inset-0 w-full h-full object-cover object-top z-0">
+                <img src="https://i.imgur.com/99RV5jM.jpeg" class="absolute inset-0 w-full h-full object-cover object-top z-0">
                 <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent via-50% to-[#fdfbf7] z-10"></div>
 
                 <div class="relative z-20 pt-12">
@@ -186,21 +176,17 @@
                     <p class="font-body text-2xl text-gray-800 leading-relaxed italic px-2 font-medium">
                         "Hay recuerdos que no voy a olvidar, personas que no voy a olvidar y momentos como este, que siempre voy a recordar. Porque son parte de mi vida, por eso quisiera que estén a mi lado para que me acompañen en este día tan especial."
                     </p>
-                    <div class="mt-4 flex justify-center">
-                        <span class="w-20 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"></span>
-                    </div>
+                    <div class="mt-4 flex justify-center"><span class="w-20 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"></span></div>
                 </section>
 
-                <section class="space-y-6 reveal">
+                <section class="space-y-6">
                     <div class="text-center">
                         <span class="text-xs font-sans-clean uppercase tracking-[0.2em] text-amber-800 font-bold">Con la Bendición de Dios</span>
                         <h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest mt-0.5">Mis Padres & Padrinos</h3>
                     </div>
 
                     <div class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 relative shadow-md">
-                        <div class="w-10 h-10 mx-auto -mt-10 bg-amber-600 border-2 border-white rounded-full flex items-center justify-center text-white shadow-md">
-                            <i class="fas fa-heart text-xs"></i>
-                        </div>
+                        <div class="w-10 h-10 mx-auto -mt-10 bg-amber-600 border-2 border-white rounded-full flex items-center justify-center text-white shadow-md"><i class="fas fa-heart text-xs"></i></div>
                         <h4 class="font-serif-heading text-amber-800 text-xs tracking-widest uppercase font-bold mb-3 mt-1">Mis Padres</h4>
                         <p class="font-body text-2xl text-gray-900 font-bold">Misael Jasso Gonzales</p>
                         <p class="font-script text-2xl text-ruby-700 my-0.5">&</p>
@@ -208,9 +194,7 @@
                     </div>
 
                     <div class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 relative shadow-md">
-                        <div class="w-10 h-10 mx-auto -mt-10 bg-ruby-700 border-2 border-white rounded-full flex items-center justify-center text-white shadow-md">
-                            <i class="fas fa-star text-xs"></i>
-                        </div>
+                        <div class="w-10 h-10 mx-auto -mt-10 bg-ruby-700 border-2 border-white rounded-full flex items-center justify-center text-white shadow-md"><i class="fas fa-star text-xs"></i></div>
                         <h4 class="font-serif-heading text-amber-800 text-xs tracking-widest uppercase font-bold mb-3 mt-1">Mis Padrinos</h4>
                         <p class="font-body text-2xl text-gray-900 font-bold">Manuel Martínez Bautista</p>
                         <p class="font-script text-2xl text-ruby-700 my-0.5">&</p>
@@ -218,14 +202,10 @@
                     </div>
                 </section>
 
-                <section class="glass-card-accent rounded-3xl p-6 text-center border border-ruby-200 shadow-xl space-y-5 reveal">
-                    <div>
-                        <h3 class="font-serif-heading text-2xl text-amber-900 uppercase tracking-widest">Faltan muy pocos días</h3>
-                    </div>
-
+                <section class="glass-card-accent rounded-3xl p-6 text-center border border-ruby-200 shadow-xl space-y-5">
+                    <div><h3 class="font-serif-heading text-2xl text-amber-900 uppercase tracking-widest">Faltan muy pocos días</h3></div>
                     <div class="rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md aspect-[3/4] relative group">
-                        <img src="https://i.imgur.com/nTgff3q.jpeg" alt="Cuenta Regresiva" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
-                        
+                        <img src="https://i.imgur.com/nTgff3q.jpeg" class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col items-center justify-end pb-8">
                             <div id="countdown-container" class="flex space-x-2 sm:space-x-3 text-white font-serif-heading drop-shadow-2xl">
                                 <div class="text-center backdrop-blur-sm bg-black/30 px-3 py-2 rounded-xl border border-white/20 shadow-lg">
@@ -247,58 +227,44 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="pt-2">
                         <button onclick="addToGoogleCalendar()" class="w-full py-3 px-4 rounded-xl bg-amber-900 hover:bg-amber-800 text-white text-xs font-sans-clean font-bold uppercase tracking-wider shadow-md flex items-center justify-center space-x-2 transition-all hover:scale-[1.01] active:scale-95">
-                            <i class="far fa-calendar-alt text-amber-300 text-base"></i>
-                            <span>Calendar</span>
+                            <i class="far fa-calendar-alt text-amber-300 text-base"></i><span>Calendar</span>
                         </button>
                     </div>
                 </section>
 
-                <section class="space-y-6 reveal">
-                    <div class="text-center">
-                        <h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest">¿Dónde & Cuándo?</h3>
-                    </div>
-
+                <section class="space-y-6">
+                    <div class="text-center"><h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest">¿Dónde & Cuándo?</h3></div>
+                    
                     <div class="glass-card-light rounded-2xl p-6 border border-amber-300/60 shadow-lg relative overflow-hidden">
                         <div class="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
-                            <div class="w-16 h-16 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 text-2xl shrink-0 shadow-inner">
-                                <i class="fas fa-church"></i>
-                            </div>
+                            <div class="w-16 h-16 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800 text-2xl shrink-0 shadow-inner"><i class="fas fa-church"></i></div>
                             <div class="flex-1">
                                 <span class="text-xs font-sans-clean tracking-widest uppercase text-ruby-700 font-bold">Ceremonia Religiosa</span>
                                 <h4 class="font-serif-heading text-xl text-amber-950 font-bold mt-0.5">Santuario Niño de la Salud</h4>
-                                <p class="text-gray-700 text-base mt-1 font-medium">
-                                    <i class="far fa-clock text-amber-700 mr-2"></i>Misa: 4:00 PM
-                                </p>
+                                <p class="text-gray-700 text-base mt-1 font-medium"><i class="far fa-clock text-amber-700 mr-2"></i>Misa: 4:00 PM</p>
                             </div>
                         </div>
                         <div class="mt-5">
                             <a href="https://maps.app.goo.gl/7BcJuzNwdQbQcdqd7?g_st=ic" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-xl bg-amber-800 hover:bg-amber-900 text-white text-xs font-sans-clean tracking-widest uppercase font-bold flex items-center justify-center space-x-2 shadow-md transition-all hover:scale-[1.01] active:scale-95">
-                                <i class="fas fa-map-marker-alt text-amber-300"></i>
-                                <span>Ver Ubicación en Google Maps</span>
+                                <i class="fas fa-map-marker-alt text-amber-300"></i><span>Ver Ubicación en Google Maps</span>
                             </a>
                         </div>
                     </div>
 
                     <div class="glass-card-light rounded-2xl p-6 border border-amber-300/60 shadow-lg relative overflow-hidden">
                         <div class="flex flex-col md:flex-row items-center text-center md:text-left gap-4">
-                            <div class="w-16 h-16 rounded-2xl bg-ruby-100 border border-ruby-200 flex items-center justify-center text-ruby-800 text-2xl shrink-0 shadow-inner">
-                                <i class="fas fa-glass-cheers"></i>
-                            </div>
+                            <div class="w-16 h-16 rounded-2xl bg-ruby-100 border border-ruby-200 flex items-center justify-center text-ruby-800 text-2xl shrink-0 shadow-inner"><i class="fas fa-glass-cheers"></i></div>
                             <div class="flex-1">
                                 <span class="text-xs font-sans-clean tracking-widest uppercase text-ruby-700 font-bold">Recepción & Fiesta</span>
                                 <h4 class="font-serif-heading text-xl text-amber-950 font-bold mt-0.5">Salón 1918</h4>
-                                <p class="text-gray-700 text-base mt-1 font-medium">
-                                    <i class="far fa-clock text-amber-700 mr-2"></i>Hora de inicio: 6:00 PM
-                                </p>
+                                <p class="text-gray-700 text-base mt-1 font-medium"><i class="far fa-clock text-amber-700 mr-2"></i>Hora de inicio: 6:00 PM</p>
                             </div>
                         </div>
                         <div class="mt-5">
                             <a href="https://maps.app.goo.gl/L8q8LM8DqvNCiVSw9?g_st=ic" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-xl bg-ruby-800 hover:bg-ruby-900 text-white text-xs font-sans-clean tracking-widest uppercase font-bold flex items-center justify-center space-x-2 shadow-md transition-all hover:scale-[1.01] active:scale-95">
-                                <i class="fas fa-map-marker-alt text-ruby-200"></i>
-                                <span>Ver Ubicación en Google Maps</span>
+                                <i class="fas fa-map-marker-alt text-ruby-200"></i><span>Ver Ubicación en Google Maps</span>
                             </a>
                         </div>
                     </div>
@@ -306,51 +272,36 @@
             </div>
 
             <section class="relative w-full h-[70vh] md:h-[85vh] overflow-hidden reveal">
-                <img src="https://i.imgur.com/56C5vOp.jpeg" alt="Montserrat Jasso Estrada" class="absolute inset-0 w-full h-full object-cover object-[50%_35%]">
+                <img src="https://i.imgur.com/56C5vOp.jpeg" class="absolute inset-0 w-full h-full object-cover object-[50%_35%]">
                 <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#fdfbf7] to-transparent z-10"></div>
                 <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#fdfbf7] to-transparent z-10"></div>
             </section>
 
             <div class="max-w-xl mx-auto px-4 space-y-12 py-12">
-                <section class="glass-card-light rounded-3xl p-6 border border-amber-300/60 shadow-xl space-y-6 reveal">
+                
+                <section class="glass-card-light rounded-3xl p-6 border border-amber-300/60 shadow-xl space-y-6">
                     <div class="text-center">
                         <span class="text-xs font-sans-clean uppercase tracking-[0.2em] text-amber-800 font-bold">Mis Recuerdos</span>
                         <h3 class="font-serif-heading text-2xl text-gold-gradient uppercase tracking-widest mt-0.5">Galería de Fotos</h3>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/56C5vOp.jpeg')">
-                            <img src="https://i.imgur.com/56C5vOp.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/qKDay2C.jpeg')">
-                            <img src="https://i.imgur.com/qKDay2C.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/ah9EBpM.jpeg')">
-                            <img src="https://i.imgur.com/ah9EBpM.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/a7JlKY7.jpeg')">
-                            <img src="https://i.imgur.com/a7JlKY7.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/OmPcCcG.jpeg')">
-                            <img src="https://i.imgur.com/OmPcCcG.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
-                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/Cu06gcp.jpeg')">
-                            <img src="https://i.imgur.com/Cu06gcp.jpeg" alt="Galería" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500">
-                        </div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/56C5vOp.jpeg')"><img src="https://i.imgur.com/56C5vOp.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/qKDay2C.jpeg')"><img src="https://i.imgur.com/qKDay2C.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/ah9EBpM.jpeg')"><img src="https://i.imgur.com/ah9EBpM.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/a7JlKY7.jpeg')"><img src="https://i.imgur.com/a7JlKY7.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/OmPcCcG.jpeg')"><img src="https://i.imgur.com/OmPcCcG.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden border border-amber-300 shadow-sm cursor-pointer group" onclick="openPhotoModal('https://i.imgur.com/Cu06gcp.jpeg')"><img src="https://i.imgur.com/Cu06gcp.jpeg" class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"></div>
                     </div>
                     <p class="text-center text-xs font-sans-clean text-gray-500 italic">Haz clic en cualquier imagen para ampliar</p>
                 </section>
 
-                <section class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 shadow-lg relative reveal">
-                    <div class="w-12 h-12 mx-auto bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 text-xl mb-3 shadow-sm">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
+                <section class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 shadow-lg relative">
+                    <div class="w-12 h-12 mx-auto bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 text-xl mb-3 shadow-sm"><i class="fas fa-user-tie"></i></div>
                     <h3 class="font-serif-heading text-xl text-amber-950 uppercase tracking-widest font-bold mb-1">Código de Vestimenta</h3>
                     <p class="font-sans-clean text-lg font-bold text-amber-800 tracking-wider uppercase mb-4">FORMAL</p>
-                    
                     <div class="p-4 bg-ruby-50 border border-ruby-200 rounded-2xl space-y-2 text-left sm:text-center">
                         <div class="flex items-center justify-center space-x-2 text-ruby-800 font-bold text-sm">
-                            <i class="fas fa-exclamation-circle text-ruby-600 text-base"></i>
-                            <span>Nota Especial sobre el Color Rojo</span>
+                            <i class="fas fa-exclamation-circle text-ruby-600 text-base"></i><span>Nota Especial sobre el Color Rojo</span>
                         </div>
                         <p class="font-body text-xl text-gray-800 leading-snug">
                             <strong class="text-ruby-900 font-bold">Cualquier tipo de rojo no se permite, queda estrictamente reservado para la quinceañera.</strong> 
@@ -359,70 +310,58 @@
                     </div>
                 </section>
 
-                <section class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 shadow-lg relative reveal">
-                    <div class="w-12 h-12 mx-auto bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 text-xl mb-3 shadow-sm animate-float">
-                        <i class="fas fa-envelope-open-text"></i>
-                    </div>
+                <section class="glass-card-light rounded-2xl p-6 text-center border border-amber-300/60 shadow-lg relative">
+                    <div class="w-12 h-12 mx-auto bg-amber-100 border border-amber-300 rounded-2xl flex items-center justify-center text-amber-800 text-xl mb-3 shadow-sm animate-float"><i class="fas fa-envelope-open-text"></i></div>
                     <h3 class="font-serif-heading text-xl text-amber-950 font-bold uppercase tracking-widest mb-1">Mesa de Regalos</h3>
                     <p class="font-sans-clean text-base font-bold text-amber-800 tracking-wider uppercase mb-2">LLUVIA DE SOBRES</p>
-                    <p class="font-body text-2xl text-gray-800 leading-relaxed px-2 font-medium">
-                        Tu presencia es mi mejor regalo. Si deseas otorgarme un detalle especial, contaremos con una lluvia de sobres el día del evento. ¡Muchas gracias!
-                    </p>
+                    <p class="font-body text-2xl text-gray-800 leading-relaxed px-2 font-medium">Tu presencia es mi mejor regalo. Si deseas otorgarme un detalle especial, contaremos con una lluvia de sobres el día del evento. ¡Muchas gracias!</p>
                 </section>
             </div>
 
             <section class="relative w-full h-[70vh] md:h-[85vh] overflow-hidden reveal">
-                <img src="https://i.imgur.com/a7JlKY7.jpeg" alt="Montserrat Jasso Estrada" class="absolute inset-0 w-full h-full object-cover object-[50%_30%]">
+                <img src="https://i.imgur.com/a7JlKY7.jpeg" class="absolute inset-0 w-full h-full object-cover object-[50%_30%]">
                 <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#fdfbf7] to-transparent z-10"></div>
                 <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#fdfbf7] to-transparent z-10"></div>
             </section>
 
             <div class="max-w-xl mx-auto px-4 space-y-12 py-12">
-                <section id="rsvp" class="glass-card-accent rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-2xl relative overflow-hidden reveal">
+                <section id="rsvp" class="glass-card-accent rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-2xl relative overflow-hidden">
                     <div class="text-center mb-6">
                         <span class="text-xs font-sans-clean text-ruby-700 font-bold tracking-widest uppercase">Módulo de Confirmación Digital</span>
                         <h3 class="font-serif-heading text-2xl text-amber-950 font-extrabold uppercase tracking-widest mt-1">Confirma tu Asistencia</h3>
-                        <p class="text-xs font-sans-clean text-gray-700 mt-2 font-medium">
-                            <i class="far fa-clock text-ruby-700 mr-1"></i>Fecha límite: <strong>10 de Agosto de 2026</strong>
-                        </p>
+                        <p class="text-xs font-sans-clean text-gray-700 mt-2 font-medium"><i class="far fa-clock text-ruby-700 mr-1"></i>Fecha límite: <strong>10 de Agosto de 2026</strong></p>
                     </div>
 
-                    <form id="scacForm" onsubmit="processConfirmation(event)" class="space-y-4 font-sans-clean">
-                        
-                        <!-- Tarjeta pre-llenada SCAC (Aparece si hay link personalizado) -->
-                        <div id="scacPreFilledCard" class="hidden p-5 bg-amber-50/80 backdrop-blur-sm border border-amber-300 rounded-2xl text-center shadow-inner mb-4">
-                            <p class="text-[10px] uppercase tracking-widest font-bold text-amber-800 mb-1.5">Pases Reservados a:</p>
-                            <h4 id="scacFormName" class="font-serif-heading text-xl font-bold text-amber-950"></h4>
-                            <div class="mt-3 text-ruby-800 font-bold text-sm bg-white/90 inline-block px-4 py-1.5 rounded-xl border border-amber-200 shadow-sm">
-                                <i class="fas fa-ticket-alt mr-1"></i> <span id="scacFormPasses"></span>
-                            </div>
-                        </div>
+                    <!-- Módulo Inteligente RSVP (SCAC) -->
+                    <div id="noScacWarning" class="hidden text-center p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+                        <i class="fas fa-lock text-amber-500 text-2xl mb-2"></i>
+                        <p class="text-sm text-amber-900 font-medium">Por favor, abre la invitación utilizando el enlace personal que te fue enviado por WhatsApp para poder confirmar tu asistencia.</p>
+                    </div>
 
-                        <!-- Fallback Manual (Si no hay link personalizado) -->
-                        <div id="manualNameInput">
-                            <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Nombre Completo o Familia *</label>
-                            <input type="text" id="guestName" placeholder="Ej. Familia Pérez / Juan García" class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm">
-                        </div>
-
-                        <!-- Selector Inteligente (Limitado a los pases asignados) -->
+                    <form id="scacForm" onsubmit="processConfirmation(event)" class="space-y-4 font-sans-clean hidden">
                         <div>
-                            <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">¿Cuántos pases confirmas? *</label>
-                            <select id="guestCountSelect" required class="w-full px-4 py-3 rounded-xl bg-white/90 border border-amber-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all shadow-sm font-bold">
-                                <!-- Llenado por JS -->
-                            </select>
-                            <p id="maxPassesMsg" class="text-[10px] text-ruby-700 mt-1 font-bold hidden"><i class="fas fa-lock mr-1"></i> Protegido por sistema SCAC</p>
+                            <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Nombre de la Familia / Invitado *</label>
+                            <input type="text" id="rsvpName" required readonly class="w-full px-4 py-3 rounded-xl bg-amber-50/50 border border-amber-300/50 text-amber-900 font-bold shadow-sm cursor-not-allowed outline-none select-none">
                         </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-amber-950 font-bold mb-1.5">Pases que confirmas utilizar *</label>
+                            <select id="rsvpCount" required class="w-full px-4 py-3 rounded-xl bg-white/80 border border-amber-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-md font-bold text-center appearance-none cursor-pointer">
+                                <!-- Opciones inyectadas por JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 pt-16 text-amber-800"><i class="fas fa-chevron-down"></i></div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 mb-2 font-medium italic text-center">*La cantidad está limitada al número de pases asignados en tu invitación.</p>
 
-                        <button type="submit" id="btnConfirm" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-emerald-900/20 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-95 mt-4">
-                            <i class="fab fa-whatsapp text-xl"></i>
-                            <span>Confirmar Asistencia</span>
+                        <button type="submit" id="submitRsvpBtn" class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-emerald-900/20 flex items-center justify-center space-x-2 transition-all transform hover:scale-[1.01] active:scale-95 mt-4 group">
+                            <i class="fab fa-whatsapp text-xl group-hover:animate-bounce"></i>
+                            <span id="btnTextRsvp">Confirmar y Enviar</span>
                         </button>
                     </form>
                 </section>
 
                 <footer class="text-center py-10 border-t border-amber-300/60 space-y-6 reveal">
                     <div class="w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-amber-300 shadow-xl relative p-1 bg-white">
-                        <img src="https://i.imgur.com/Cu06gcp.jpeg" alt="Montserrat" class="w-full h-full object-cover object-center rounded-full">
+                        <img src="https://i.imgur.com/Cu06gcp.jpeg" class="w-full h-full object-cover object-center rounded-full">
                     </div>
                     <div>
                         <p class="font-script text-4xl text-amber-800 mb-1">¡Te esperamos!</p>
@@ -434,106 +373,90 @@
                 </footer>
             </div>
         </main>
+    </div>
 
-        <!-- PHOTO MODAL LIGHTBOX -->
-        <div id="photoModal" class="fixed inset-0 z-50 bg-black/90 hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closePhotoModal()">
-            <div class="relative max-w-3xl w-full max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
-                <button onclick="closePhotoModal()" class="absolute -top-12 right-0 text-white text-3xl p-2 hover:text-amber-400 transition-colors"><i class="fas fa-times"></i></button>
-                <img id="modalImage" src="" alt="Foto Ampliada" class="max-w-full max-h-[85vh] rounded-2xl border-2 border-amber-300/60 shadow-2xl object-contain">
-            </div>
-        </div>
-    </div> <!-- FIN WRAPPER PRINCIPAL -->
-
-    <!-- ============================================== -->
-    <!-- PANEL ADMIN SCAC (CONTROL DE EVENTOS Y BDD)    -->
-    <!-- ============================================== -->
-    <div id="adminPanel" class="hidden relative z-[100] min-h-screen p-4 md:p-8 font-sans-clean bg-[#fdfbf7]">
-        <div class="fixed inset-0 z-0 opacity-10 pointer-events-none" style="background-image: url('https://i.imgur.com/r035ySS.jpeg'); background-size: 250px;"></div>
-        
-        <div class="max-w-5xl mx-auto space-y-8 relative z-10 pt-4">
+    <!-- ========================================== -->
+    <!--          PANEL ADMIN SCAC (OCULTO)         -->
+    <!-- ========================================== -->
+    <div id="panelAdmin" class="hidden relative z-[100] w-full min-h-screen p-4 md:p-8 font-sans-clean">
+        <div class="max-w-6xl mx-auto space-y-6">
             
-            <header class="glass-card-light rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border border-amber-300/60 shadow-xl">
-                <div class="text-center md:text-left mb-5 md:mb-0">
-                    <span class="text-[10px] font-sans-clean uppercase tracking-[0.3em] text-ruby-700 font-bold">Uso Exclusivo Organizadores</span>
-                    <h1 class="font-serif-heading text-2xl md:text-3xl text-amber-950 font-bold uppercase tracking-widest mt-1">Panel SCAC <span class="text-amber-600 font-script text-3xl lowercase">Pro</span></h1>
-                    <p class="text-xs font-sans-clean text-amber-900 mt-2 font-medium">Panel de Control General - XV Montserrat</p>
+            <header class="glass-panel-admin rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border-t-4 border-amber-600 relative overflow-hidden">
+                <div class="relative z-10 text-center md:text-left">
+                    <span class="text-[10px] font-bold text-ruby-700 uppercase tracking-widest mb-2 block">Uso Exclusivo Organizadores</span>
+                    <h1 class="font-serif-heading text-3xl font-extrabold text-amber-950 tracking-wide">PANEL SCAC <span class="font-script text-amber-600 lowercase font-normal text-4xl ml-1">pro</span></h1>
+                    <p class="text-sm text-gray-600 mt-1 font-medium">Panel de Control General - XV Montserrat</p>
                 </div>
-                <div class="flex items-center space-x-4 bg-amber-50/80 backdrop-blur-md px-6 py-4 rounded-2xl border border-amber-200 shadow-inner">
-                    <div class="w-12 h-12 rounded-full bg-amber-200/50 flex items-center justify-center text-amber-800 border border-amber-300/50">
-                        <i class="fas fa-ticket-alt text-xl"></i>
-                    </div>
+                <div class="mt-6 md:mt-0 relative z-10 flex items-center space-x-4 bg-amber-50/80 px-6 py-4 rounded-xl border border-amber-200 shadow-sm">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-xl shadow-inner"><i class="fas fa-ticket-alt"></i></div>
                     <div>
-                        <span class="block text-amber-800 text-[10px] uppercase font-bold tracking-widest mb-0.5">Pases Emitidos</span>
-                        <span id="adminTotalPasses" class="font-serif-heading font-bold text-3xl text-amber-950 leading-none">0</span>
+                        <span class="block text-amber-900/60 text-xs uppercase font-bold tracking-wider">Pases Emitidos</span>
+                        <span id="adminTotalPasses" class="font-serif-heading font-extrabold text-3xl text-amber-900">0</span>
                     </div>
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                <!-- COLUMNA IZQUIERDA (GENERADOR DE ENLACES LOCAL) -->
-                <div class="lg:col-span-1 space-y-8">
-                    <section class="glass-card-light rounded-3xl p-6 border border-amber-300/60 shadow-xl">
-                        <div class="mb-5 border-b border-amber-200/60 pb-3 text-center">
-                            <h2 class="font-serif-heading text-lg text-amber-900 font-bold uppercase tracking-widest"><i class="fas fa-link text-amber-500 mr-2"></i> Crear Invitación</h2>
-                        </div>
-                        <form id="adminGeneratorForm" class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Columna Izquierda: Generador -->
+                <div class="space-y-6">
+                    <section class="glass-panel-admin rounded-2xl p-6 md:p-8">
+                        <h2 class="text-lg font-serif-heading font-bold text-amber-950 mb-5 flex items-center border-b border-amber-200 pb-3"><i class="fas fa-link text-amber-600 mr-2"></i>Crear Invitación</h2>
+                        <form id="adminGeneratorForm" class="space-y-5">
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-amber-900 mb-1.5">Nombre / Familia *</label>
-                                <input type="text" id="adminGuestName" required placeholder="Ej. Familia Jasso" class="w-full px-4 py-3 rounded-xl bg-white/70 border border-amber-300/80 text-amber-950 focus:ring-2 focus:ring-amber-500 outline-none text-sm font-bold">
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-amber-900 mb-2">Nombre / Familia *</label>
+                                <input type="text" id="adminGuestName" required placeholder="Ej. Familia Jasso" class="w-full px-4 py-3 rounded-xl border border-amber-300 bg-white/70 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all text-sm shadow-sm font-medium text-amber-950">
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-amber-900 mb-1.5">Pases Asignados *</label>
-                                <input type="number" id="adminGuestPasses" required min="1" max="15" value="2" class="w-full px-4 py-3 rounded-xl bg-white/70 border border-amber-300/80 text-amber-950 focus:ring-2 focus:ring-amber-500 outline-none text-center font-bold text-lg">
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-amber-900 mb-2">Pases Asignados *</label>
+                                <input type="number" id="adminGuestPasses" required min="1" max="15" value="2" class="w-full px-4 py-3 rounded-xl border border-amber-300 bg-white/70 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all text-center font-bold text-xl text-amber-950 shadow-sm">
                             </div>
-                            <button type="submit" class="w-full bg-amber-900 hover:bg-amber-800 text-white px-6 py-3.5 rounded-xl font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center space-x-2 shadow-lg mt-2">
-                                <i class="fas fa-magic text-amber-300"></i><span>Generar Link</span>
+                            <button type="submit" class="w-full bg-amber-900 hover:bg-amber-950 text-white px-6 py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl active:scale-95">
+                                <i class="fas fa-magic"></i><span>Generar Link</span>
                             </button>
                         </form>
                     </section>
 
-                    <!-- LISTA LOCAL DE ENLACES CREADOS -->
-                    <section class="glass-card-light rounded-3xl p-6 border border-amber-300/60 shadow-xl max-h-[500px] overflow-y-auto">
-                        <div class="mb-4 flex justify-between items-center border-b border-amber-200/60 pb-3">
-                            <h2 class="font-serif-heading text-sm text-amber-900 font-bold uppercase tracking-widest">Links Creados</h2>
-                            <button onclick="adminClearHistory()" class="text-[9px] text-ruby-600 font-bold uppercase"><i class="fas fa-trash"></i> Borrar</button>
+                    <section class="glass-panel-admin rounded-2xl p-6">
+                        <div class="flex justify-between items-center mb-4 border-b border-amber-200 pb-3">
+                            <h2 class="text-sm font-serif-heading font-bold text-amber-950 tracking-wider">Links Creados</h2>
+                            <button onclick="clearHistory()" class="text-[10px] text-ruby-600 hover:text-ruby-800 font-bold uppercase tracking-wider"><i class="fas fa-trash-alt mr-1"></i> Borrar</button>
                         </div>
-                        <div id="adminGuestList" class="space-y-3"></div>
-                        <p id="adminEmptyState" class="text-center text-xs text-amber-800/50 py-6 font-medium">Aún no hay enlaces generados.</p>
+                        <div class="overflow-y-auto max-h-60 pr-2 space-y-2" id="adminGuestList">
+                            <!-- Enlaces locales se inyectan aquí -->
+                        </div>
+                        <p class="text-[9px] text-gray-400 text-center mt-3">*Este historial solo se guarda en este dispositivo.</p>
                     </section>
                 </div>
 
-                <!-- COLUMNA DERECHA (BASE DE DATOS EN TIEMPO REAL - CLOUD) -->
+                <!-- Columna Derecha: Base de Datos Realtime -->
                 <div class="lg:col-span-2">
-                    <section class="glass-card-light rounded-3xl p-6 md:p-8 border border-amber-300/60 shadow-xl h-full flex flex-col">
-                        <div class="mb-6 border-b border-amber-200/60 pb-4 flex justify-between items-end">
+                    <section class="glass-panel-admin rounded-2xl p-6 md:p-8 h-full flex flex-col">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-amber-200 pb-4">
                             <div>
-                                <h2 class="font-serif-heading text-xl text-emerald-800 font-bold uppercase tracking-widest flex items-center">
-                                    <i class="fas fa-cloud-download-alt text-emerald-500 mr-2"></i> Base de Datos (Cloud)
-                                </h2>
-                                <p class="text-xs text-gray-500 font-medium mt-1">Confirmaciones recibidas en tiempo real por los invitados.</p>
+                                <h2 class="text-xl font-serif-heading font-bold text-emerald-800 flex items-center"><i class="fas fa-cloud-download-alt mr-2 text-emerald-600"></i>Base de Datos (Cloud)</h2>
+                                <p class="text-xs text-gray-500 mt-1">Confirmaciones recibidas en tiempo real por los invitados.</p>
                             </div>
-                            <div class="text-right">
-                                <span class="block text-emerald-800 text-[10px] uppercase font-bold tracking-widest mb-0.5">Asistentes Confirmados</span>
-                                <span id="adminTotalConfirmed" class="font-serif-heading font-bold text-3xl text-emerald-700 leading-none">0</span>
+                            <div class="mt-4 sm:mt-0 text-right bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
+                                <span class="block text-[10px] uppercase font-bold text-emerald-700 tracking-wider">Asistentes Confirmados</span>
+                                <span id="adminTotalConfirmed" class="text-3xl font-serif-heading font-extrabold text-emerald-900">0</span>
                             </div>
                         </div>
 
-                        <div class="flex-1 overflow-x-auto rounded-2xl border border-amber-200/60 bg-white/60 backdrop-blur-md shadow-inner">
-                            <table class="w-full text-left border-collapse min-w-[600px]">
+                        <div class="flex-1 overflow-x-auto bg-white/50 rounded-xl border border-amber-200 shadow-inner">
+                            <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-amber-100/60 text-amber-900 text-[10px] uppercase tracking-widest border-b border-amber-200/80">
-                                        <th class="p-4 font-bold">Familia / Invitado</th>
-                                        <th class="p-4 text-center font-bold">Asignados</th>
-                                        <th class="p-4 text-center font-bold text-emerald-700">Confirmados</th>
-                                        <th class="p-4 text-right font-bold">Fecha / Hora</th>
+                                    <tr class="bg-amber-100/50 text-amber-900 text-[10px] uppercase tracking-widest font-bold border-b border-amber-200">
+                                        <th class="p-4 rounded-tl-xl">Familia / Invitado</th>
+                                        <th class="p-4 text-center">Asignados</th>
+                                        <th class="p-4 text-center">Confirmados</th>
+                                        <th class="p-4 text-right rounded-tr-xl">Fecha / Hora</th>
                                     </tr>
                                 </thead>
-                                <tbody id="adminRSVPList" class="divide-y divide-amber-200/40 text-sm">
+                                <tbody id="adminDbList" class="divide-y divide-amber-100/50">
                                     <tr>
-                                        <td colspan="4" class="p-8 text-center text-amber-800/50">
-                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                                            <p class="text-xs font-medium uppercase tracking-widest">Conectando a la base de datos...</p>
+                                        <td colspan="4" class="p-10 text-center text-amber-700 font-medium">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-3 text-amber-500"></i>
+                                            <p class="text-xs uppercase tracking-widest">Conectando a la base de datos...</p>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -543,88 +466,124 @@
                 </div>
             </div>
         </div>
-        
-        <div id="adminToast" class="fixed bottom-6 right-6 transform translate-y-24 opacity-0 transition-all duration-300 !bg-amber-900 text-white px-6 py-4 rounded-2xl shadow-2xl font-bold flex items-center space-x-3 z-[110] border border-amber-700">
-            <i class="fas fa-check-circle text-amber-300 text-xl"></i>
-            <span class="font-sans-clean text-xs uppercase tracking-widest">Copiado al portapapeles</span>
+    </div>
+
+    <!-- Modal Fotos -->
+    <div id="photoModal" class="fixed inset-0 z-[110] bg-black/90 hidden items-center justify-center p-4 transition-opacity duration-300" onclick="closePhotoModal()">
+        <div class="relative max-w-3xl w-full max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closePhotoModal()" class="absolute -top-12 right-0 text-white text-3xl p-2 hover:text-amber-400 transition-colors"><i class="fas fa-times"></i></button>
+            <img id="modalImage" src="" alt="Foto Ampliada" class="max-w-full max-h-[85vh] rounded-2xl border-2 border-amber-300/60 shadow-2xl object-contain">
         </div>
     </div>
 
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-2xl font-bold font-sans-clean text-xs flex items-center space-x-2 z-[200] pointer-events-none">
+        <i class="fas fa-check-circle text-lg"></i>
+        <span id="toastMsg">Acción exitosa</span>
+    </div>
 
     <!-- ============================================== -->
     <!-- SCRIPT PRINCIPAL & FIREBASE MODULE             -->
     <!-- ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // FIREBASE SETUP
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'montserrat-xv-2026';
-        let firebaseConfig = {};
-        try {
-            firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
-        } catch (e) { console.warn("Firebase config not found."); }
+        // TUS LLAVES REALES DE FIREBASE (Tomadas del chat)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDu1lOOkk0SpIeWNlVqycWoedEgC1nv0OA",
+            authDomain: "xv-montserrat.firebaseapp.com",
+            projectId: "xv-montserrat",
+            storageBucket: "xv-montserrat.firebasestorage.app",
+            messagingSenderId: "64210815515",
+            appId: "1:64210815515:web:57d82ceaaeab3565c7c6be"
+        };
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let currentUser = null;
 
-        // AUTHENTICATION
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                    currentUser = cred.user;
-                } else {
-                    const cred = await signInAnonymously(auth);
-                    currentUser = cred.user;
-                }
+        // Autenticación anónima silenciosa
+        signInAnonymously(auth).catch((error) => console.error("Error Auth:", error));
+
+        // VARIABLES GLOBALES DE ESTADO
+        const urlParams = new URLSearchParams(window.location.search);
+        const guestNameParam = urlParams.get('n');
+        const passesParam = parseInt(urlParams.get('p')) || 0;
+        const isAdmin = urlParams.get('modo') === 'admin';
+        const baseUrl = window.location.origin + window.location.pathname;
+        const orgPhone = "522205673535"; // Teléfono para RSVP
+
+        // --- ENRUTADOR DE VISTAS (INVITADO VS ADMIN) ---
+        if (isAdmin) {
+            document.body.classList.remove('bg-light-pattern');
+            document.body.classList.add('bg-amber-50');
+            document.getElementById("mainInviteContainer").style.display = "none";
+            document.getElementById("petalsCanvas").style.display = "none";
+            document.getElementById("panelAdmin").classList.remove("hidden");
+            initAdminPanel();
+        } else {
+            // Inicializar vista de invitado normal
+            if (guestNameParam && passesParam > 0) {
+                // Personalizar bienvenida
+                document.getElementById('welcomeScacBox').classList.remove('hidden');
+                document.getElementById('welcomeScacName').innerText = guestNameParam.replace(/\+/g, ' ');
+                document.getElementById('welcomeScacPasses').innerText = passesParam;
+
+                // Configurar Formulario RSVP Bloqueado
+                document.getElementById('scacForm').classList.remove('hidden');
+                document.getElementById('rsvpName').value = guestNameParam.replace(/\+/g, ' ');
                 
-                // Si estamos en modo Admin, cargar la tabla desde Firestore
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('modo') === 'admin') {
-                    listenToRSVPs();
+                const selectEl = document.getElementById('rsvpCount');
+                for (let i = 1; i <= passesParam; i++) {
+                    let option = document.createElement('option');
+                    option.value = i;
+                    option.text = i === 1 ? '1 Pase' : `${i} Pases`;
+                    if (i === passesParam) option.selected = true; // Seleccionar el máximo por defecto
+                    selectEl.appendChild(option);
                 }
-            } catch (error) {
-                console.error("Auth Error:", error);
+            } else {
+                // Mostrar aviso si abren sin link personalizado
+                document.getElementById('noScacWarning').classList.remove('hidden');
             }
         }
-        initAuth();
 
-        // SCAC GLOBAL VARS
-        let scacGuest = null;
-        let scacPasses = null;
-
-        // UI & AUDIO LOGIC
-        let bgMusic = document.getElementById("bgMusic");
-        if(bgMusic) bgMusic.volume = 0;
+        // --- MÓDULO DE AUDIO (FADE IN/OUT Y LANA DEL REY) ---
+        const backgroundAudio = new Audio("https://dl.dropboxusercontent.com/scl/fi/otqoup879pylxmofv4gqz/Lana-Del-Rey-Born-To-Die-Instrumental-Studio-Quality.mp3?rlkey=k3ipyhealzbwxmimgclvhxeqo&st=2zs5jj8l&dl=1");
+        backgroundAudio.loop = true;
+        backgroundAudio.volume = 0;
         let isPlaying = false;
         let fadeInterval = null;
 
         window.toggleAudio = function() {
-            if (!bgMusic) return;
             if (!isPlaying) {
-                bgMusic.play().then(() => {
+                backgroundAudio.play().then(() => {
                     isPlaying = true;
                     document.getElementById("musicIcon").className = "fas fa-volume-up text-xl text-amber-800 animate-pulse";
                     document.getElementById("musicText").innerText = "Pausar";
+                    
                     clearInterval(fadeInterval);
-                    let vol = bgMusic.volume;
                     fadeInterval = setInterval(() => {
-                        if (vol < 0.95) { vol += 0.05; bgMusic.volume = vol; } 
-                        else { bgMusic.volume = 1; clearInterval(fadeInterval); }
+                        if (backgroundAudio.volume < 0.95) {
+                            backgroundAudio.volume = Math.min(1, backgroundAudio.volume + 0.05);
+                        } else {
+                            clearInterval(fadeInterval);
+                        }
                     }, 150);
-                }).catch(e => console.log("Audio interact", e));
+                }).catch(e => console.log("Bloqueado por navegador", e));
             } else {
                 clearInterval(fadeInterval);
-                let vol = bgMusic.volume;
                 fadeInterval = setInterval(() => {
-                    if (vol > 0.05) { vol -= 0.05; bgMusic.volume = vol; } 
-                    else { bgMusic.volume = 0; bgMusic.pause(); clearInterval(fadeInterval); isPlaying = false; 
-                           document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
-                           document.getElementById("musicText").innerText = "Música"; }
+                    if (backgroundAudio.volume > 0.05) {
+                        backgroundAudio.volume = Math.max(0, backgroundAudio.volume - 0.05);
+                    } else {
+                        backgroundAudio.pause();
+                        backgroundAudio.volume = 0;
+                        isPlaying = false;
+                        clearInterval(fadeInterval);
+                        document.getElementById("musicIcon").className = "fas fa-music text-xl text-amber-700";
+                        document.getElementById("musicText").innerText = "Música";
+                    }
                 }, 100);
             }
         };
@@ -632,34 +591,210 @@
         window.openInvitation = function() {
             const overlay = document.getElementById("envelopeOverlay");
             overlay.classList.add("opacity-0", "pointer-events-none");
-            setTimeout(() => { overlay.style.display = "none"; }, 700);
+            setTimeout(() => overlay.style.display = "none", 700);
             window.toggleAudio();
         };
 
+        // --- PROCESAMIENTO RSVP A FIREBASE ---
+        window.processConfirmation = async function(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submitRsvpBtn');
+            const btnText = document.getElementById('btnTextRsvp');
+            
+            btn.disabled = true;
+            btnText.innerText = "Enviando a Base de Datos...";
+            btn.classList.add("opacity-75");
+
+            const confirmedPasses = parseInt(document.getElementById('rsvpCount').value);
+            const rsvpData = {
+                nombre: guestNameParam.replace(/\+/g, ' '),
+                pasesAsignados: passesParam,
+                pasesConfirmados: confirmedPasses,
+                fecha: serverTimestamp(),
+                plataforma: navigator.userAgent
+            };
+
+            try {
+                // Guardar en Nube
+                await addDoc(collection(db, "confirmaciones"), rsvpData);
+                
+                // Preparar WhatsApp
+                let msj = `✨ *CONFIRMACIÓN RECIBIDA* ✨\n\n`;
+                msj += `Hola, somos la *${rsvpData.nombre}*.\n`;
+                msj += `Nuestros datos ya fueron enviados a la plataforma.\n\n`;
+                msj += `🎟️ Confirmamos la asistencia de *${confirmedPasses}* persona(s).\n\n`;
+                msj += `¡Gracias por la invitación, allá nos vemos!`;
+
+                const waUrl = `https://wa.me/${orgPhone}?text=${encodeURIComponent(msj)}`;
+                
+                btnText.innerText = "¡Confirmación Exitosa!";
+                btn.classList.replace("from-emerald-600", "from-green-600");
+                
+                setTimeout(() => { window.location.href = waUrl; }, 1000);
+
+            } catch (e) {
+                console.error("Error al guardar:", e);
+                alert("Hubo un error al enviar tu confirmación. Intenta de nuevo.");
+                btn.disabled = false;
+                btnText.innerText = "Confirmar y Enviar";
+                btn.classList.remove("opacity-75");
+            }
+        };
+
+        // --- FUNCIONES PANEL ADMIN (MODO ORGANIZADOR) ---
+        let localGuests = JSON.parse(localStorage.getItem('admin_jasso_links')) || [];
+        
+        function initAdminPanel() {
+            renderLocalLinks();
+
+            // Escuchar Base de Datos en Tiempo Real
+            const dbRef = collection(db, "confirmaciones");
+            const q = query(dbRef, orderBy("fecha", "desc")); // Ordenar recientes primero
+
+            onSnapshot(q, (snapshot) => {
+                const tableBody = document.getElementById("adminDbList");
+                let confirmedCount = 0;
+                tableBody.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-amber-700 font-medium"><i class="fas fa-box-open text-3xl mb-3 opacity-50 block"></i>Nadie ha confirmado aún.</td></tr>';
+                } else {
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        confirmedCount += (data.pasesConfirmados || 0);
+                        
+                        let dateStr = "Procesando...";
+                        if(data.fecha) {
+                            const dateObj = data.fecha.toDate();
+                            dateStr = dateObj.toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                        }
+
+                        const tr = document.createElement("tr");
+                        tr.className = "hover:bg-amber-50/50 transition-colors text-sm border-b border-amber-100/50 last:border-0";
+                        tr.innerHTML = `
+                            <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
+                            <td class="p-4 text-center text-gray-500 font-medium">${data.pasesAsignados}</td>
+                            <td class="p-4 text-center text-emerald-700 font-extrabold text-lg">${data.pasesConfirmados}</td>
+                            <td class="p-4 text-right text-gray-500 text-[10px] tracking-wider uppercase">${dateStr}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+                document.getElementById("adminTotalConfirmed").innerText = confirmedCount;
+            }, (error) => {
+                console.error("Error DB:", error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-500 font-medium">Error al leer la base de datos.</td></tr>';
+            });
+
+            // Formulario de enlaces
+            document.getElementById('adminGeneratorForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('adminGuestName').value.trim();
+                const passes = document.getElementById('adminGuestPasses').value;
+
+                if (name && passes) {
+                    localGuests.push({ name, passes, id: Date.now() });
+                    renderLocalLinks();
+                    document.getElementById('adminGeneratorForm').reset();
+                    document.getElementById('adminGuestPasses').value = "2";
+                    document.getElementById('adminGuestName').focus();
+                    window.copyLink(localGuests.length - 1);
+                }
+            });
+        }
+
+        function renderLocalLinks() {
+            const listEl = document.getElementById('adminGuestList');
+            let totalPasses = 0;
+            listEl.innerHTML = '';
+
+            if (localGuests.length === 0) {
+                listEl.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs italic">No has generado enlaces en este equipo.</div>';
+            } else {
+                localGuests.slice().reverse().forEach((g, index) => {
+                    const realIndex = localGuests.length - 1 - index;
+                    totalPasses += parseInt(g.passes);
+                    
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center p-3 bg-white rounded-xl border border-amber-200 shadow-sm";
+                    div.innerHTML = `
+                        <div class="leading-tight">
+                            <span class="block font-bold text-amber-950 text-sm uppercase">${g.name}</span>
+                            <span class="text-[10px] text-amber-700 font-bold tracking-widest">${g.passes} PASES</span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button onclick="copyLink(${realIndex})" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-copy"></i></button>
+                            <button onclick="sendWaAdmin(${realIndex})" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors"><i class="fab fa-whatsapp"></i></button>
+                            <button onclick="delLocalLink(${realIndex})" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors ml-2"><i class="fas fa-times"></i></button>
+                        </div>
+                    `;
+                    listEl.appendChild(div);
+                });
+            }
+            document.getElementById('adminTotalPasses').innerText = totalPasses;
+            localStorage.setItem('admin_jasso_links', JSON.stringify(localGuests));
+        }
+
+        window.copyLink = function(idx) {
+            const g = localGuests[idx];
+            const link = `${baseUrl}?n=${encodeURIComponent(g.name)}&p=${g.passes}`;
+            const text = `✨ *¡Están Invitados!* ✨\n\nHola *${g.name}*,\n\nTenemos el honor de invitarles a celebrar los XV Años de *Montserrat*.\n\n🎟️ Hemos reservado *${g.passes} pase(s)* exclusivamente en su honor.\n\nPor favor, abran el siguiente enlace para ver todos los detalles del evento, ubicación, código de vestimenta y confirmar su valiosa asistencia (Es importante confirmar a través de la invitación web):\n\n👉 ${link}\n\n_¡Esperamos contar con su presencia!_`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                document.getElementById('toastMsg').innerText = "Mensaje Copiado";
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            });
+        };
+
+        window.sendWaAdmin = function(idx) {
+            const g = localGuests[idx];
+            const link = `${baseUrl}?n=${encodeURIComponent(g.name)}&p=${g.passes}`;
+            const text = `✨ *¡Están Invitados!* ✨\n\nHola *${g.name}*,\n\nTenemos el honor de invitarles a celebrar los XV Años de *Montserrat*.\n\n🎟️ Hemos reservado *${g.passes} pase(s)* exclusivamente en su honor.\n\nPor favor, abran el siguiente enlace para ver todos los detalles del evento, ubicación y confirmar su asistencia:\n\n👉 ${link}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        window.delLocalLink = function(idx) {
+            if(confirm("¿Quitar este enlace de tu historial?")) {
+                localGuests.splice(idx, 1);
+                renderLocalLinks();
+            }
+        };
+
+        window.clearHistory = function() {
+            if(confirm("¿Borrar todo tu historial de enlaces creados?")) {
+                localGuests = [];
+                renderLocalLinks();
+            }
+        };
+
+        // --- FUNCIONES GLOBALES (CALENDARIO, MODALES, ETC) ---
         window.addToGoogleCalendar = function() {
             const title = "XV Años Montserrat Jasso Estrada";
             const location = "Santuario Niño de la Salud / Salón 1918";
-            const details = "Celebración de los Quince Años de Montserrat Jasso Estrada.";
-            const start = "20260815T160000Z";
-            const end = "20260816T000000Z";
-            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`, '_blank');
+            const details = "Celebración de los Quince Años de Montserrat. Misa: 4:00 PM. Recepción: 6:00 PM.";
+            const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=20260815T160000/20260816T000000&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+            window.open(url, '_blank');
         };
 
-        window.openPhotoModal = function(src) {
-            document.getElementById("modalImage").src = src;
-            document.getElementById("photoModal").classList.remove("hidden");
-            document.getElementById("photoModal").classList.add("flex");
+        window.openPhotoModal = function(imgSrc) {
+            document.getElementById("modalImage").src = imgSrc;
+            document.getElementById("photoModal").classList.replace("hidden", "flex");
         };
 
         window.closePhotoModal = function() {
-            document.getElementById("photoModal").classList.add("hidden");
-            document.getElementById("photoModal").classList.remove("flex");
+            document.getElementById("photoModal").classList.replace("flex", "hidden");
         };
 
-        // COUNTDOWN
+        // --- CUENTA REGRESIVA ---
         function updateCountdown() {
-            const distance = new Date("August 15, 2026 16:00:00").getTime() - new Date().getTime();
-            if (distance < 0) return;
+            const targetDate = new Date("August 15, 2026 16:00:00").getTime();
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) return; // Terminado
+
             if(document.getElementById("cd-days")) {
                 document.getElementById("cd-days").innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
                 document.getElementById("cd-hours").innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
@@ -667,263 +802,72 @@
                 document.getElementById("cd-seconds").innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
             }
         }
-        setInterval(updateCountdown, 1000); updateCountdown();
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
 
-        // CLOUD RSVP (Enviando a Firebase)
-        window.processConfirmation = async function(event) {
-            event.preventDefault();
-            const btn = document.getElementById("btnConfirm");
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin text-xl"></i> <span>Procesando...</span>';
-            btn.disabled = true;
-
-            const name = scacGuest ? scacGuest : document.getElementById("guestName").value.trim();
-            const assigned = scacPasses ? scacPasses : "Libre";
-            const confirmed = document.getElementById("guestCountSelect").value;
-
-            // 1. Guardar en Base de Datos
-            if (currentUser) {
-                try {
-                    const rsvpsRef = collection(db, 'artifacts', appId, 'public', 'data', 'rsvps');
-                    await addDoc(rsvpsRef, {
-                        nombre: name,
-                        pases_asignados: assigned,
-                        pases_confirmados: parseInt(confirmed),
-                        timestamp: Date.now()
-                    });
-                } catch (e) {
-                    console.error("Error guardando RSVP:", e);
-                }
-            }
-
-            // 2. Enviar a WhatsApp
-            const text = `✨ *CONFIRMACIÓN DE ASISTENCIA* ✨\n------------------------------------\nHola, acabo de confirmar mi asistencia en la invitación digital. Mis datos ya fueron enviados a la base de datos oficial.\n\n👤 *Familia:* ${name}\n🎟️ *Confirmamos:* ${confirmed} de ${assigned} pases.\n------------------------------------`;
-            window.open(`https://wa.me/522205673535?text=${encodeURIComponent(text)}`, '_blank');
-            
-            btn.innerHTML = '<i class="fas fa-check text-xl"></i> <span>¡Confirmado!</span>';
-        };
-
-        // ADMIN SCAC BDD LISTENER
-        function listenToRSVPs() {
-            if (!currentUser) return;
-            const rsvpsRef = collection(db, 'artifacts', appId, 'public', 'data', 'rsvps');
-            
-            onSnapshot(rsvpsRef, (snapshot) => {
-                const listEl = document.getElementById('adminRSVPList');
-                if(!listEl) return;
-                listEl.innerHTML = '';
-                
-                let total = 0;
-                let docs = [];
-                snapshot.forEach(doc => docs.push(doc.data()));
-                docs.sort((a,b) => b.timestamp - a.timestamp); // Mas recientes primero
-
-                if(docs.length === 0) {
-                    listEl.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-amber-800/50"><i class="fas fa-box-open text-2xl mb-2 opacity-50"></i><p class="text-xs font-medium uppercase">Aún no hay confirmaciones recibidas.</p></td></tr>`;
-                }
-
-                docs.forEach(data => {
-                    total += (data.pases_confirmados || 0);
-                    const dateObj = new Date(data.timestamp);
-                    const dateStr = dateObj.toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-amber-50/50 transition-colors border-b border-amber-200/50 last:border-0";
-                    tr.innerHTML = `
-                        <td class="p-4 font-bold text-amber-950">${data.nombre}</td>
-                        <td class="p-4 text-center text-xs text-amber-800/80 font-bold">${data.pases_asignados}</td>
-                        <td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-800 py-1.5 px-4 rounded-full font-bold text-xs shadow-sm border border-emerald-200">${data.pases_confirmados}</span></td>
-                        <td class="p-4 text-right text-amber-800/70 text-xs font-medium">${dateStr}</td>
-                    `;
-                    listEl.appendChild(tr);
-                });
-                document.getElementById('adminTotalConfirmed').innerText = total;
-            }, (error) => console.error("Error Snapshot:", error));
-        }
-
-        // ADMIN LOCAL LINKS MANAGER
-        let adminGuests = JSON.parse(localStorage.getItem('scac_montserrat_guests')) || [];
-        const adminBaseUrl = window.location.origin + window.location.pathname;
-
-        function adminGenerateText(name, passes) {
-            const link = `${adminBaseUrl}?n=${encodeURIComponent(name)}&p=${passes}`;
-            return `✨ *¡Están Invitados!* ✨\n\nHola *${name}*,\n\nTenemos el honor de invitarles a celebrar los XV Años de *Montserrat*.\n\n🎟️ Hemos reservado *${passes} pase(s)* exclusivamente en su honor.\n\nPor favor, abran el siguiente enlace para ver todos los detalles del evento, ubicación, código de vestimenta y confirmar su valiosa asistencia:\n\n👉 ${link}\n\n_¡Esperamos contar con su presencia!_`;
-        }
-
-        function adminRenderLocalLinks() {
-            const listEl = document.getElementById('adminGuestList');
-            const emptyEl = document.getElementById('adminEmptyState');
-            if(!listEl) return;
-            listEl.innerHTML = '';
-            let total = 0;
-
-            if (adminGuests.length === 0) { emptyEl.classList.remove('hidden'); } 
-            else {
-                emptyEl.classList.add('hidden');
-                adminGuests.slice().reverse().forEach((guest, index) => {
-                    const realIndex = adminGuests.length - 1 - index;
-                    total += parseInt(guest.passes);
-                    const div = document.createElement('div');
-                    div.className = "flex justify-between items-center p-3 bg-white/60 border border-amber-200/70 rounded-xl";
-                    div.innerHTML = `
-                        <div><p class="font-bold text-amber-950 text-xs">${guest.name}</p><p class="text-[9px] font-bold text-amber-700 uppercase mt-0.5">${guest.passes} Pases</p></div>
-                        <div class="space-x-1 flex">
-                            <button onclick="adminCopy('${realIndex}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 p-2 rounded-lg text-xs"><i class="fas fa-copy"></i></button>
-                            <button onclick="adminSend('${realIndex}')" class="bg-green-50 text-green-600 hover:bg-green-100 p-2 rounded-lg text-xs"><i class="fab fa-whatsapp"></i></button>
-                            <button onclick="adminDel('${realIndex}')" class="text-ruby-400 hover:text-ruby-600 p-2 text-xs"><i class="fas fa-times"></i></button>
-                        </div>
-                    `;
-                    listEl.appendChild(div);
-                });
-            }
-            document.getElementById('adminTotalPasses').innerText = total;
-            localStorage.setItem('scac_montserrat_guests', JSON.stringify(adminGuests));
-        }
-
-        window.adminCopy = function(i) {
-            navigator.clipboard.writeText(adminGenerateText(adminGuests[i].name, adminGuests[i].passes)).then(() => {
-                const toast = document.getElementById('adminToast');
-                toast.classList.remove('translate-y-24', 'opacity-0');
-                setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
-            });
-        };
-        window.adminSend = function(i) { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(adminGenerateText(adminGuests[i].name, adminGuests[i].passes))}`, '_blank'); };
-        window.adminDel = function(i) { if(confirm('¿Eliminar link local?')) { adminGuests.splice(i, 1); adminRenderLocalLinks(); } };
-        window.adminClearHistory = function() { if(confirm('⚠️ ¿Borrar todos los enlaces creados?')) { adminGuests = []; adminRenderLocalLinks(); } };
-
-        // --- ANIMACIÓN DE PÉTALOS (CANVAS) ---
-        let petals = [];
-        let canvasCtx = null;
-        let canvasWidth, canvasHeight;
-
-        class Petal {
-            constructor() { this.reset(); }
-            reset() {
-                this.x = Math.random() * canvasWidth;
-                this.y = Math.random() * -canvasHeight;
-                this.size = Math.random() * 6 + 4;
-                this.speedY = Math.random() * 1.2 + 0.5;
-                this.speedX = Math.random() * 0.8 - 0.4;
-                this.angle = Math.random() * Math.PI * 2;
-                this.spin = (Math.random() - 0.5) * 0.02;
-                const colors = ['rgba(212, 175, 55, 0.45)', 'rgba(190, 18, 60, 0.3)'];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-            }
-            update() {
-                this.y += this.speedY;
-                this.x += Math.sin(this.angle) * 0.5 + this.speedX;
-                this.angle += this.spin;
-                if (this.y > canvasHeight + 20) this.reset();
-            }
-            draw() {
-                if(!canvasCtx) return;
-                canvasCtx.save();
-                canvasCtx.translate(this.x, this.y);
-                canvasCtx.rotate(this.angle);
-                canvasCtx.fillStyle = this.color;
-                canvasCtx.beginPath();
-                canvasCtx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
-                canvasCtx.fill();
-                canvasCtx.restore();
-            }
-        }
-
-        function animatePetals() {
-            if (!canvasCtx) return;
-            canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-            petals.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animatePetals);
-        }
-
-        // INITIALIZATION
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            // ADMIN MODE
-            if (urlParams.get('modo') === 'admin') {
-                if(document.getElementById('invitationWrapper')) document.getElementById('invitationWrapper').style.display = 'none';
-                document.getElementById('adminPanel').classList.remove('hidden');
-                adminRenderLocalLinks();
-                
-                document.getElementById('adminGeneratorForm').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const name = document.getElementById('adminGuestName').value.trim();
-                    const passes = document.getElementById('adminGuestPasses').value;
-                    if (name && passes) {
-                        adminGuests.push({ name, passes });
-                        adminRenderLocalLinks();
-                        e.target.reset(); document.getElementById('adminGuestPasses').value = "2";
-                        window.adminCopy(adminGuests.length - 1);
-                    }
-                });
-                return;
-            }
-
-            // GUEST MODE
+        // --- LLUVIA DE PÉTALOS (CANVAS) ---
+        if (!isAdmin) {
             const canvas = document.getElementById("petalsCanvas");
-            if(canvas) {
-                // Iniciar motor de físicas y gráficos del Canvas
-                canvasWidth = canvas.width = window.innerWidth;
-                canvasHeight = canvas.height = window.innerHeight;
-                canvasCtx = canvas.getContext("2d");
-                petals = Array.from({ length: 35 }, () => new Petal());
+            const ctx = canvas.getContext("2d");
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
 
-                window.addEventListener("resize", () => {
-                    canvasWidth = canvas.width = window.innerWidth;
-                    canvasHeight = canvas.height = window.innerHeight;
-                });
+            window.addEventListener("resize", () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
 
-                // ANIMACIONES SCROLL Y CANVAS
-                const reveals = document.querySelectorAll(".reveal");
-                const handleScroll = () => {
-                    reveals.forEach(r => { if (r.getBoundingClientRect().top < window.innerHeight - 80) r.classList.add("active"); });
-                };
-                window.addEventListener("scroll", handleScroll); handleScroll();
-                animatePetals();
-            }
-
-            // SCAC GUEST LOGIC
-            const n = urlParams.get('n');
-            const p = urlParams.get('p');
-
-            const selectEl = document.getElementById('guestCountSelect');
-            
-            if (n && p) {
-                scacGuest = n; scacPasses = parseInt(p);
-                // Saludo Bienvenida
-                if(document.getElementById('scacGuestGreeting')) {
-                    document.getElementById('scacGuestGreeting').classList.remove('hidden');
-                    document.getElementById('scacNameDisplay').innerText = scacGuest;
-                    document.getElementById('scacPassesDisplay').innerText = scacPasses + (scacPasses == 1 ? " PASE" : " PASES");
+            class Petal {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * -height;
+                    this.size = Math.random() * 9 + 5;
+                    this.speedY = Math.random() * 1.4 + 0.7;
+                    this.speedX = Math.random() * 0.8 - 0.4;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spin = (Math.random() - 0.5) * 0.02;
+                    const colors = ['rgba(212,175,55,0.45)', 'rgba(244,63,94,0.35)', 'rgba(190,18,60,0.25)', 'rgba(251,191,36,0.4)'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
                 }
-                // RSVP Fallbacks
-                if(document.getElementById('manualNameInput')) document.getElementById('manualNameInput').classList.add('hidden');
-                if(document.getElementById('guestName')) document.getElementById('guestName').removeAttribute('required');
-                
-                // Cargar Tarjeta SCAC Bloqueada
-                if(document.getElementById('scacPreFilledCard')) {
-                    document.getElementById('scacPreFilledCard').classList.remove('hidden');
-                    document.getElementById('scacFormName').innerText = scacGuest;
-                    document.getElementById('scacFormPasses').innerText = scacPasses + (scacPasses == 1 ? " Pase Reservado" : " Pases Reservados");
+                update() {
+                    this.y += this.speedY;
+                    this.x += Math.sin(this.angle) * 0.6 + this.speedX;
+                    this.angle += this.spin;
+                    if (this.y > height + 20) this.reset();
                 }
-
-                // Generar opciones estricas (1 al Max asignado)
-                if(selectEl) {
-                    selectEl.innerHTML = '';
-                    for(let i = 1; i <= scacPasses; i++) {
-                        const opt = document.createElement('option');
-                        opt.value = i; opt.innerText = i + (i === 1 ? " Pase" : " Pases");
-                        if(i === scacPasses) opt.selected = true; // Por defecto maximo
-                        selectEl.appendChild(opt);
-                    }
-                    document.getElementById('maxPassesMsg').classList.remove('hidden');
-                }
-            } else {
-                // Generar opciones libres por defecto si no hay link
-                if(selectEl) {
-                    selectEl.innerHTML = '<option value="1">1 Pase (Individual)</option><option value="2" selected>2 Pases</option><option value="3">3 Pases</option><option value="4">4 Pases</option><option value="5">5 Pases</option><option value="Familia Completa">Familia Completa</option>';
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.size, this.size / 2.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
                 }
             }
-        };
+
+            const petals = Array.from({ length: 35 }, () => new Petal());
+            function animatePetals() {
+                ctx.clearRect(0, 0, width, height);
+                petals.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animatePetals);
+            }
+            animatePetals();
+        }
+
+        // --- ANIMACIÓN AL HACER SCROLL ---
+        function handleScrollReveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                if (reveals[i].getBoundingClientRect().top < window.innerHeight - 80) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", handleScrollReveal);
+        handleScrollReveal();
     </script>
 </body>
 </html>
